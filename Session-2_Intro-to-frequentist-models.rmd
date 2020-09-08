@@ -1,6 +1,6 @@
 ---
 title: 'Session 2: Introduction to frequentist models in R'
-author: "Natalie Z. Kerr"
+author: "Natalie Z. Kerr & Brian Lovett"
 date: "9/7/2020"
 output: html_document
 ---

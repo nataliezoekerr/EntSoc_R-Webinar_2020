@@ -1,0 +1,49 @@
+---
+title: 'Session 1: Introduction to R'
+author: "Brian Lovett & Natalie Z. Kerr"
+date: "9/7/2020"
+output: html_document
+---
+
+**Description:** This session will lay a coding foundation for R beginners. We will familiarize you with using the RStudio interface, RScripts and RMarkdown. Students will learn basic commands in the ever-changing R language, how to interpret errors and package installation. We will use these tools to wrangle and visualize data using Tidyverse packages.
+
+
+## 1. Introduction to R Studio, R Scripts, RMarkdown/RNotebooks, and R Projects. 
+
+
+
+## 2. R as a calculator
+
+```{r}
+
+```
+
+
+## 3. R as an object-oriented lanugage
+
+```{r}
+
+```
+
+
+## 4. Working with data
+
+```{r}
+
+```
+
+
+## 5. Functions and Loops
+
+```{r}
+
+```
+
+
+
+## 6. Plotting in R
+
+```{r}
+
+```
+
