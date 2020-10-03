@@ -1,0 +1,360 @@
+---
+title: 'Session 2: Introduction to frequentist models in R'
+author: "Natalie Z. Kerr & Brian Lovett"
+date: "9/7/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+**Description:** Here, we will cover how to run general linear models (**LMs**; e.g., Gaussian/Normal distribution), generalized linear models (**GLMs**; e.g., binomial, Poisson for count data), and mixed models (**LMMs/GLMMs**; e.g., fixed vs. random effects). We will also expand on models using Poisson-distributed data by evaluating how to deal with common issues such as when your count data are over-dispersed/under-dispersed (e.g., Poisson vs. Negative Binomial vs. Conway-Maxwell-Poisson), when counts should be represented as rates (e.g., counts per unit time using Poisson offsets), and when your count data are zero-inflated (e.g., 0-inflated regression vs hurdle models). Finally, we will finish the session on appropriate ways to run model selection techniques for finding a winning model from a set of candidate models, using likelihood ratio tests for nested models and Akaike Information Criteria (AIC). This course will not be a statistics course, so people will need to be familiar with most of these models.
+
+
+## 1. Packages required
+
+Before running the following code, please open the R Project for the EntSoc R Webinar series in the main folder ("EntSoc_R-Webinar_2020.Rproj"). 
+
+Here, is a list of packages required for this R course. You will need to install these prior to the class, either install from the "packages" panel in R studio or using the function below. 
+
+> install.package("")
+
+Once installed, we can run these packages in advance. I will inform you whenever we are running a function from each of these packages throughout this session. 
+
+```{r Packages required, message = F }
+
+library(here) # for navigation among folders
+
+library(pscl) # for zero-inflated regression models
+library(glmmTMB) # for glmmTMB::glmmTMB() for hurdle models
+
+library(lme4) # lme4::glmer() for mixed models
+
+library(car) # for likelihood ratio tests
+library(lmtest) # for likelihood ratio tests
+
+library(bbmle) # for AIC
+
+```
+
+Today, we will cover three main statistical distributions: 
+
+   1. Normal/Gaussian
+   2. Binomial
+   3. Poisson
+
+We will cover alternative statistical distributions to the Poisson distribution, when encountering common issues with count data.
+
+## 2. Introduction to *general* linear models, LMs
+
+First, we will cover running linear models for normally-distributed (or Gaussian distributed) data. Linear models can be used to carry out single stratum analysis of variance (i.e., intercept-only models), analysis of covariance (ANOVA, i.e., differences among groups), and regression. 
+
+We will use Brown hare (*Lepus europaeus*) data over 17 years (1992-2008) at 56 sites in 8 regions of Switzerland for most of our examples today. Sites vary in area, elevation, and belong to two habitat types (arable and grassland). These data are used in the [2010 Marc Kery book](https://www.mbr-pwrc.usgs.gov/software/kerybook/) that contains examples of both R and WinBUGS code. 
+
+```{r Hares data, include = T }
+
+hares <- read.table(here::here("Session 2", "Data", "hares.data.txt"), header = T)
+head(hares)
+View(hares)
+
+```
+
+
+### a. First, we can run an "intercept-only" model to estimate the mean density of Brown hares across Switzerland. 
+
+```{r Intercept-only model }
+
+dens1 <- lm(mean.density ~ 1, data = hares)
+summary(dens1)
+
+mean(hares$mean.density, na.rm = T) # remove
+sd(hares$mean.density, na.rm = T)/sqrt(nrow(subset(hares, !is.na(mean.density)))) # remove
+
+```
+
+Summary output: 
+  * Call - model formula. 
+  * Residuals - difference between the observed response values and model predicted values. Mean should be zero. 
+  * Coefficients - model estimate, its SE, t-value (SDs our estimate is from 0)
+  * P-value - probability of observing a value equal or larger than *t*, i.e., is our model estimate is significantly different from 0?
+
+### b. One-way ANOVA
+
+Here, we will run a one-way analysis of variance (ANOVA) model to estimate mean density in the two habitat types: arable vs. grassland. 
+
+```{r ANOVA }
+
+dens2 <- lm(mean.density ~ landuse, data = hares)
+summary(dens2)
+
+Anova(dens2) # analysis of variance table, not to be confused with the model
+
+```
+
+Here, we used what is referred to as "effect parameterization". The dummy variable (or *(Intercept)*) is arable land, and the *landusegrass* is difference to grassland relative to the dummy variable. The mean density in the arable land is `r coef(dens2)[1]` and the mean density in the grassland is `r coef(dens2)[1] + coef(dens)[2]`, i.e., y = B1 + B2 x 1.
+
+```{r Effects vs. means parametrization }
+
+effects.par <- lm(mean.density ~ 1 + landuse, data = hares)
+summary(effects.par) # same model as dens2
+
+means.par <- lm(mean.density ~ -1 + landuse, data = hares)
+summary(means.par) # removes dummy variable
+
+model.matrix(means.par)[70:80, ] # each row is an observation used to find MLE 
+model.matrix(effects.par)[70:80,] 
+subset(hares, !is.na(mean.density))[70:80,]
+
+```
+
+
+### Practice example 1: ANOVA
+
+Using the built-in "ToothGrowth" R dataset, run an ANOvA to estimate tooth growth for three dosages of vitamin C. Run two models using the effects and means parameterization approach. 
+
+> data("ToothGrowth") # to load data
+
+ToothGrowth data set contains data from an experiment studying the effect of vitamin C on tooth growth in 60 Guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, (orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+
+
+```{r Practice 1 }
+
+```
+
+
+### c. Two-way ANOVA
+
+Here, we will run a two-way ANOVA (without an interactive effect) of landuse and region on mean density of Brown hares. 
+
+```{r Two-way ANOVA }
+
+dens4 <- lm(mean.density ~ region + landuse, data = hares)
+summary(dens4)
+Anova(dens4)
+
+dens5 <- lm(mean.density ~ -1 + region + landuse, data = hares)
+summary(dens5) # mildly more comprehensible 
+
+```
+
+
+### d. Linear regression
+
+```{r }
+
+dens6 <- lm(mean.density ~ elevation, data = hares)
+summary(dens6)
+
+Anova(dens6)
+with(hares, plot(elevation, mean.density))
+
+```
+
+
+
+```{r}
+
+dens7 <- lm(mean.density ~ elevation + I(elevation*elevation), data = hares)
+summary(dens7)
+
+Anova(dens7)
+
+```
+
+```{r}
+
+
+```
+
+
+### e. ANCOVA
+
+```{r}
+
+
+```
+
+
+
+
+Before continuing with these models, we always want to test for the assumptions of normality on our response variable. 
+  1. Linearity of the data: linear relationship between x and y
+  2. Normality of residuals: residual errors are normally-distributed
+  3. Homogeneity of residuals variance (i.e., homoscedasicity): constant variance of the residuals
+  4. Independence of residuals error terms.
+
+We can test for relevant assumptions using diagnostic plots:
+
+```{r Tests for normality }
+
+plot(dens1, 2) # QQ plot - examine whether residuals are normally-distributed
+
+hist(hares$mean.density)
+
+```
+
+Here, we can see that these data are right skewed, but also zero truncated. First, we can use the common approach when our data do not met the assumptions of normality, which is to log-transform our data. 
+
+
+```{r Dealing with non-normal data }
+
+dens2 <- lm(log(mean.density) ~ 1, data = hares)
+plot(dens2, 2) # left skewed
+
+hist(log(hares$mean.density)) 
+
+```
+
+Instead of transforming our data to fit a statistical distribution, we can choose a statistical distribution that fits our data. Since our data are zero truncated, we can use an alternative statistical distribution that allows for normally-distributed data that are bound by 0 to infinity. 
+
+```{r Gamma distribution }
+
+dens2 <- glm(mean.density ~ 1, family = Gamma, data = hares)
+plot(dens2, 2)
+
+```
+
+
+
+
+
+
+
+## 3. Introduction to general*ized* linear models, GLMs
+
+
+### i. Binomial proccesses
+
+Here, we will use generalized linear models to estimate a response that is binomial, e.g., successes vs. failures (or k events and N trials) or presence/absense data. 
+
+
+```{r}
+
+```
+
+### ii. Count data
+
+```{r}
+
+
+```
+
+
+### iii. Gaussian vs. Gamma
+
+```{r}
+
+
+```
+
+
+## 4. Common issues for Poisson-distributed data
+
+### i. When data are over-dispersed or under-dispersed
+
+A common issue when fitting Poisson models is overdispersion, i.e., when count data has more variability than expected for a Poisson distribution. For Poisson models, data are less likely to be underdispersed for this given distribution. However, this is still likely to happen for biological data. Such as 
+
+
+
+```{r Overdispersion }
+
+
+```
+
+
+Undispersion is more common in ecology with species that have small clutch/litter sizes. For example, when a bird may only lay up to 6 eggs per clutch.
+
+```{r Underdispersion }
+
+
+```
+
+
+### ii. When counts should be rates 
+
+A common issue in ecology is when each observtion of count data are not always equally in represented. For example, you may find yourself in a situation where each observation is collected over different lengths of time or you count a number out of a total number.  
+
+```{r Poisson offsets }
+
+
+
+
+```
+
+
+## iii. When counts are zero-inflated
+
+Here, we will run two different models when you encounter many zeros in your count data (i.e., zero-inflated count data). We can take two potential approaches: zero-inflated regression or hurdle model. The first assumes that not all zeros are "true" zeros. This can commonly occur due to observation error, e.g., your count data may be number of cells/bees/butterflies seen, but you are not sure that not seeing an individual means that there were actually no individuals present. 
+
+A zero-inflated regression model is required for this process, since not all zeros are true. 
+
+
+
+```{r ZIP }
+
+```
+
+
+```{r Hurdle models }
+
+```
+
+
+
+## 5. Mixed models
+
+Fixed effects vs. random effects.
+
+### i. Random-coefficient models
+
+```{r}
+
+
+```
+
+
+
+
+### ii. Nested random effects
+
+```{r}
+
+```
+
+
+
+## 6. Model selection 
+
+Here, I will outline the general procedure for model selection on a set of candidate mixed models. 
+
+```{r}
+
+
+```
+
+
+## 7. Introduction to simulating data 
+
+Normal distribution and how to run linear models in R.
+
+```{r Normal distribution }
+
+n <- 100000 # sample size
+mu <- 600 # mean body mass of male pelegrines 
+sd <- 30 # SD of body size
+
+sample <- rnorm(n = n, mean = mu, sd = sd)
+head(sample) # vector of randomly generated numbers
+
+hist(sample, col = "grey")
+
+dnorm(x = 650, mean = mu, sd = sd)
+
+```
+
+
+## 8. Sources
+
+  * Marc Kery (2010) Introduction to WinBUgS for Ecologists. Academic Press, Burlinton.
+  
+  * 
+

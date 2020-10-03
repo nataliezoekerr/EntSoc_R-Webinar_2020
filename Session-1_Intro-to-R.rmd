@@ -11,7 +11,6 @@ output: html_document
 ## 1. Introduction to R Studio, R Scripts, RMarkdown/RNotebooks, and R Projects. 
 
 
-
 ## 2. R as a calculator
 
 ```{r}
