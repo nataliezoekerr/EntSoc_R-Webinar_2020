@@ -28,7 +28,7 @@ R is:
 R is a way of telling your computer what you want done with your data. This language is geared toward mathematics, which is your computer's forte. You will need to think like a computer. We will see that this language is very specific about what it wants and what it will give you- pay attention to these details!
 
 #### d. What does R **not** do?
-**Learning R is not learning statistics!** R can implement any number of statistical tests and analyses, and regardless of if they're appropriate, it will run them on data formatted appropriately. Be careful to have a plan for what statistics you want to calculate *before* you start coding.
+**Learning R is not learning statistics!** R can implement any number of statistical tests and analyses, and regardless of if they're appropriate, it will run them on properly formatted data. Be careful to have a plan for what statistics you want to calculate **before** you start coding.
 
 #### e. Why do I need RStudio?
 Primarily, RStudio provides a graphical user interface for coding in R. R alone is a console: a blank line asking for immediate instructions. Certainly, you can quickly code something like this, but part of coding is writing scripts that are reproducible. RStudio allows you to view:
@@ -38,15 +38,15 @@ Primarily, RStudio provides a graphical user interface for coding in R. R alone 
 3. The console (where commands are run)
 4. Files, Packages and Help (to orient you)
 
-RStudio makes it easier to navigate between code, the console and output, while also the characteristics of your R environment. You can think of RStudio as an "R organizer".
+RStudio makes it easier to navigate between code, the console and output, while also displaying the characteristics of your R environment. You can think of RStudio as an "R organizer".
 
-![The anatomy of the RStudio Screen](Data/RStudio_Screen.png)
+![The anatomy of the RStudio screen.](Data/RStudio_Screen.png)
 
 #### f. What are R scripts?
 R scripts list commands you want to write, edit and save. In a simple example, a script may load data (command 1), calculate a statistic on that data (command 2), then plot that statistic (command 3). With this script in hand, you can instantly run the exact same analysis. You can also share the script and data and allow colleagues to replicate and contribute to analysis.
 
 #### g. Why use RMarkdown or RNotebooks?
-RMarkdown and and RNotebooks allow you to create sharable documents that combine a written narrative, code and results. RMarkdown syntax syntax, which RNotebooks use, can be knit into pdfs or html files. (This was written via RMarkdown). RMarkdown and RNotebooks also allow you to run and view chunks of code within the document.
+RMarkdown and and RNotebooks allow you to create sharable documents that combine a written narrative, code and results. RMarkdown syntax, which is used in RNotebooks, can be knit into pdfs or html files. (This was written via RMarkdown). RMarkdown and RNotebooks also allow you to run and view chunks of code within the document.
 
 #### h. What are R Projects?
 R Projects streamline your script development. A .Rproj file keeps track of what files you are viewing and will ensure you have a consistent working directory. R Projects open in their own R session, which allows you to jump right back into coding.
@@ -70,10 +70,12 @@ Regardless of what they do, functions share certain characteristics:
 * ) - marks the end of arguments
 
 A function can be generalized as: function(argument, argument, argument)
-
+Let's explore some functions:
 ```{r functions, include=T}
+#Note: Grey boxes contain code that is sent to the console, and white boxes below are the output.
+
 #The function c (short for "combine") returns its contents as vector/list
-#The arguments for c are are the names of objects to combine
+#The arguments for c are the objects you want to combine
 seuss=c(1, "fish", 2, "fish")
 seuss
 
@@ -84,9 +86,9 @@ nums
 mean(x = nums)
 mean(nums)
 ```
-Since our object "seuss" contained numbers and words (words are "strings of characters" to your computer), this was formatted as a character class. A vector of 1-100 cooperate with the integer class, so the nums object is an integer class. This reliable behavior is built into the function c()
+Since our object "seuss" contained numbers and words (words are "strings of characters" to your computer), this was formatted as a character class. A vector of 1-100 cooperates with the integer class, so the "nums" object is an integer class. This reliable behavior is built into the function c().
 
-#### c. You can create your own functions
+#### c. You can create your own functions!
 You may want to write your own function to streamline your code or share specific workflows with others. If you find yourself copying and hard coding a few lines over and over, they may work better as a function.
 To write your own function, you need to specify the arguments of the function, the name of the function and the commands within the function.
 
@@ -106,8 +108,7 @@ repsum(input=nums)
 #Relying on order for argument assignment
 repsum(nums, 3)
 
-out=repsum(input=nums, n=4)
-out
+repsum(input=nums, n=4)
 ```
 
 Functions can work the same when nested, but they can be hard to read when you're starting out.
@@ -120,8 +121,8 @@ repsum2(nums)
 
 repsum2(nums, n=4)
 
-#This nesting avoids creating the object "reps", but it will be harder for future you and others to read
 ```
+This nesting avoids creating the object "reps", but it will be harder for future you and others to read
 
 #### d. R as a calculator
 The R base language has intuitive math functions built in. These will follow order of operations.
@@ -138,13 +139,12 @@ Information is stored in R as objects, and R objects have a wide variety of clas
 
 * Number
 ```{r number, include=T}
-#Note: Grey boxes contain code that is sent to the console, and white boxes below are the output.
 as.numeric(5)
 numeric(length=5)
 ```
 * Character
 ```{r character, include=T}
-character(5)
+as.character(5)
 ```
 * Factor
 ```{r factor, include=T}
@@ -169,8 +169,8 @@ is.na(5)
 
 These examples are all ephemeral: R read our command and returned what we asked for, but objects are much more powerful when you store them. Typically you will store whatever objects you're working with. You can store them in two ways:
 ```{r storing objects, include=T}
-five = as.numeric(5)
-six <- factor(6)
+five <- as.numeric(5)
+six = factor(6)
 
 #Running the name of an object will display that object
 five
@@ -202,6 +202,7 @@ c("apples", "oranges", "pears", "bananas")
 nums=factor(c(12:1))
 fruits=factor(c("apples", "oranges", "pears", "bananas"))
 
+nums
 levels(nums)
 levels(fruits)
 
@@ -213,7 +214,20 @@ as.numeric(fruits)
 as.numeric(as.character(fruits))
 ```
 
-## 3. 
+You can also reorder levels without reordering the factor itself.
+```{r reordering factors, include=T}
+new.order=c(1, 4, 3, 2)
+fruits
+
+#To do this, we will use the brackets, which are an object element that allows you to specify order
+levels(fruits)
+levels(fruits)[new.order]
+fruits=factor(fruits, levels=levels(fruits)[new.order])
+fruits
+```
+The order of a factor can determine, for example, the order your data is displayed on a plot (as we shall see later).
+
+## 3. Loading data
 
 ```{r, include=T}
 
