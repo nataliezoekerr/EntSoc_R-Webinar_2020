@@ -1,0 +1,248 @@
+---
+title: 'Session 1: Introduction to R'
+author: "Brian Lovett & Natalie Z. Kerr"
+date: "10/7/2020"
+output: html_document
+---
+
+**Description:** This session will lay a coding foundation for R beginners. We will familiarize you with using the RStudio interface, RScripts and RMarkdown. Students will learn basic commands in the ever-changing R language, how to interpret errors and package installation. We will use these tools to wrangle and visualize data using Tidyverse packages.
+
+## 1. Introduction to R Studio, R Scripts, RMarkdown/RNotebooks, and R Projects. 
+#### a. What is R?
+R is a programming language. Essentially, R is a medium for dialogue between you and your computer about your data. We shall highlight the lingual aspects of R throughout this introduction.
+
+#### b. Why use R?
+![xkcd comic: The General Problem](https://imgs.xkcd.com/comics/the_general_problem.png) 
+
+R is:
+
+* Free
+* Repeatable
+* Easy to share
+* Won't alter your original data
+* Saves time with reapplication
+* Has community sourced packages
+* Has a helpful online community
+
+#### c. What does R do?
+R is a way of telling your computer what you want done with your data. This language is geared toward mathematics, which is your computer's forte. You will need to think like a computer. We will see that this language is very specific about what it wants and what it will give you- pay attention to these details!
+
+#### d. What does R **not** do?
+**Learning R is not learning statistics!** R can implement any number of statistical tests and analyses, and regardless of if they're appropriate, it will run them on data formatted appropriately. Be careful to have a plan for what statistics you want to calculate *before* you start coding.
+
+#### e. Why do I need RStudio?
+Primarily, RStudio provides a graphical user interface for coding in R. R alone is a console: a blank line asking for immediate instructions. Certainly, you can quickly code something like this, but part of coding is writing scripts that are reproducible. RStudio allows you to view:
+
+1. Source (scripts and data)
+2. Environment (saved objects and functions)
+3. The console (where commands are run)
+4. Files, Packages and Help (to orient you)
+
+RStudio makes it easier to navigate between code, the console and output, while also the characteristics of your R environment. You can think of RStudio as an "R organizer".
+
+![The anatomy of the RStudio Screen](Data/RStudio_Screen.png)
+
+#### f. What are R scripts?
+R scripts list commands you want to write, edit and save. In a simple example, a script may load data (command 1), calculate a statistic on that data (command 2), then plot that statistic (command 3). With this script in hand, you can instantly run the exact same analysis. You can also share the script and data and allow colleagues to replicate and contribute to analysis.
+
+#### g. Why use RMarkdown or RNotebooks?
+RMarkdown and and RNotebooks allow you to create sharable documents that combine a written narrative, code and results. RMarkdown syntax syntax, which RNotebooks use, can be knit into pdfs or html files. (This was written via RMarkdown). RMarkdown and RNotebooks also allow you to run and view chunks of code within the document.
+
+#### h. What are R Projects?
+R Projects streamline your script development. A .Rproj file keeps track of what files you are viewing and will ensure you have a consistent working directory. R Projects open in their own R session, which allows you to jump right back into coding.
+
+### 2. Taking action with functions (verbs)
+#### a. What is a function?
+Programming generally can be considered as a series of pipes: information goes in, the pipe does something (a function), then information comes out. Your aim is to ensure that appropriate (quality) information goes in, and that the "pipe" is doing the right thing. This pipe metaphor is appropriate too when you consider the idea of a "square peg in a round hole". Half of the battle is understanding what type of information each function needs.
+
+Functions can be thought of as verbs because they act on whatever objects you provide and often need additional information. Verbs not only tell you what is happening, but they also tell you something about when it happened and how many people were involved. The additional information you supply to functions are called arguments. Some are optional and others have defaults.
+
+#### b. The anatomy of a function.
+Regardless of what they do, functions share certain characteristics:
+
+* Function name (can be any word)
+* ( - marks the start of arguments
+* Arguments
+  + Each argument has a name and can be set to something
+  + Some arguments will have defaults
+  + Some arguments will be optional
+  + Without names, order of arguments matters
+* ) - marks the end of arguments
+
+A function can be generalized as: function(argument, argument, argument)
+
+```{r functions, include=T}
+#The function c (short for "combine") returns its contents as vector/list
+#The arguments for c are are the names of objects to combine
+seuss=c(1, "fish", 2, "fish")
+seuss
+
+#A colon is the coding equivalent of "through" 1:3 returns 1, 2 and 3. 3:1 returns 3, 2 and 1.
+nums=c(1:100)
+nums
+
+mean(x = nums)
+mean(nums)
+```
+Since our object "seuss" contained numbers and words (words are "strings of characters" to your computer), this was formatted as a character class. A vector of 1-100 cooperate with the integer class, so the nums object is an integer class. This reliable behavior is built into the function c()
+
+#### c. You can create your own functions
+You may want to write your own function to streamline your code or share specific workflows with others. If you find yourself copying and hard coding a few lines over and over, they may work better as a function.
+To write your own function, you need to specify the arguments of the function, the name of the function and the commands within the function.
+
+```{r bespoke functions, include=T}
+#Here we will write a simple function that allows you to repeat "given numbers" (input: argument 1) x number of times" (n: argument 2) and take their sum. Within this custom function, we will use the functions rep.int(x, times) and sum(..., na.rm=F).
+
+repsum=function(input, n=2){
+  reps=rep.int(x=nums, times=n)
+  sum(reps)
+}
+
+#Note: the object "reps" was created within our function and so will not be added to your environment
+#Also Note: we established a default for n if that argument is missing.
+
+repsum(input=nums)
+
+#Relying on order for argument assignment
+repsum(nums, 3)
+
+out=repsum(input=nums, n=4)
+out
+```
+
+Functions can work the same when nested, but they can be hard to read when you're starting out.
+```{r nested functions, include=T}
+repsum2=function(input, n=2){
+  sum(rep.int(x=nums, times=n))
+}
+
+repsum2(nums)
+
+repsum2(nums, n=4)
+
+#This nesting avoids creating the object "reps", but it will be harder for future you and others to read
+```
+
+#### d. R as a calculator
+The R base language has intuitive math functions built in. These will follow order of operations.
+```{r}
+1+2
+1+2*3
+(1+2)*3
+2^3
+3/4
+```
+
+### 3. R as an object-oriented language (nouns)
+Information is stored in R as objects, and R objects have a wide variety of classes. Some fundamental classes are:
+
+* Number
+```{r number, include=T}
+#Note: Grey boxes contain code that is sent to the console, and white boxes below are the output.
+as.numeric(5)
+numeric(length=5)
+```
+* Character
+```{r character, include=T}
+character(5)
+```
+* Factor
+```{r factor, include=T}
+factor(5)
+```
+* Integer
+```{r integer, include=T}
+as.integer(5)
+```
+* Matrix
+```{r matrix, include=T}
+matrix(5)
+```
+* Data frame
+```{r data frame, include=T}
+data.frame(col=5)
+```
+* Logical
+```{r logical, include=T}
+is.na(5)
+```
+
+These examples are all ephemeral: R read our command and returned what we asked for, but objects are much more powerful when you store them. Typically you will store whatever objects you're working with. You can store them in two ways:
+```{r storing objects, include=T}
+five = as.numeric(5)
+six <- factor(6)
+
+#Running the name of an object will display that object
+five
+six
+```
+
+Since I deviously created these objects named "five" and "six" in different classes, let's compare them. First, we can check the class for ourselves:
+```{r check class, include=T}
+class(five)
+class(six)
+
+five+five
+six+six
+```
+
+We can also look at specific characteristics of these objects:
+```{r object characteristics, include=T}
+length(five)
+length(six)
+
+levels(six)
+```
+
+Levels are a powerful aspect of factors, let's take a deeper look at this:
+```{r fun with factors, include=T}
+c(1:12)
+c("apples", "oranges", "pears", "bananas")
+
+nums=factor(c(12:1))
+fruits=factor(c("apples", "oranges", "pears", "bananas"))
+
+levels(nums)
+levels(fruits)
+
+as.character(nums)
+as.numeric(nums)
+
+as.character(fruits)
+as.numeric(fruits)
+as.numeric(as.character(fruits))
+```
+
+## 3. 
+
+```{r, include=T}
+
+```
+
+
+## 4. Working with data
+
+```{r, include=T}
+
+```
+
+
+## 5. Functions and Loops
+
+```{r, include=T}
+
+```
+
+
+
+## 6. Plotting in R
+
+```{r, include=T}
+
+```
+
+## 7. Mapping in R
+
+```{r , include=T}
+
+```
