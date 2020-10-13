@@ -428,8 +428,9 @@ summary {
 <h4>h. What are R Projects?</h4>
 <p>R Projects streamline your script development. A .Rproj file keeps track of what files you are viewing and will ensure you have a consistent working directory. R Projects open in their own R session, which allows you to jump right back into coding.</p>
 </div>
-<div id="taking-action-with-functions-verbs" class="section level3">
-<h3>2. Taking action with functions (verbs)</h3>
+</div>
+<div id="taking-action-with-functions-verbs" class="section level2">
+<h2>2. Taking action with functions (verbs)</h2>
 <div id="a.-what-is-a-function" class="section level4">
 <h4>a. What is a function?</h4>
 <p>Programming generally can be considered as a series of pipes: information goes in, the pipe does something (a function), then information comes out. Your aim is to ensure that appropriate (quality) information goes in, and that the “pipe” is doing the right thing. This pipe metaphor is appropriate too when you consider the idea of a “square peg in a round hole”. Half of the battle is understanding what type of information each function needs.</p>
@@ -479,7 +480,7 @@ nums</code></pre>
 <pre class="r"><code>#Here we will write a simple function that allows you to repeat &quot;given numbers&quot; (input: argument 1) x number of times&quot; (n: argument 2) and take their sum. Within this custom function, we will use the functions rep.int(x, times) and sum(..., na.rm=F).
 
 repsum=function(input, n=2){
-  reps=rep.int(x=nums, times=n)
+  reps=rep.int(x=input, times=n)
   sum(reps)
 }
 
@@ -495,7 +496,7 @@ repsum(nums, 3)</code></pre>
 <pre><code>## [1] 20200</code></pre>
 <p>Functions can work the same when nested, but they can be hard to read when you’re starting out.</p>
 <pre class="r"><code>repsum2=function(input, n=2){
-  sum(rep.int(x=nums, times=n))
+  sum(rep.int(x=input, times=n))
 }
 
 repsum2(nums)</code></pre>
@@ -504,8 +505,11 @@ repsum2(nums)</code></pre>
 <pre><code>## [1] 20200</code></pre>
 <p>This nesting avoids creating the object “reps”, but it will be harder for future you and others to read</p>
 </div>
-<div id="d.-r-as-a-calculator" class="section level4">
-<h4>d. R as a calculator</h4>
+<div id="d.-creating-loops" class="section level4">
+<h4>d. Creating loops</h4>
+</div>
+<div id="e.-r-as-a-calculator" class="section level4">
+<h4>e. R as a calculator</h4>
 <p>The R base language has intuitive math functions built in. These will follow order of operations.</p>
 <pre class="r"><code>1+2</code></pre>
 <pre><code>## [1] 3</code></pre>
@@ -519,8 +523,8 @@ repsum2(nums)</code></pre>
 <pre><code>## [1] 0.75</code></pre>
 </div>
 </div>
-<div id="r-as-an-object-oriented-language-nouns" class="section level3">
-<h3>3. R as an object-oriented language (nouns)</h3>
+<div id="r-as-an-object-oriented-language-nouns" class="section level2">
+<h2>3. R as an object-oriented language (nouns)</h2>
 <p>Information is stored in R as objects, and R objects have a wide variety of classes. Some fundamental classes are:</p>
 <ul>
 <li>Number</li>
@@ -590,8 +594,8 @@ five</code></pre>
 <pre class="r"><code>levels(six)</code></pre>
 <pre><code>## [1] &quot;6&quot;</code></pre>
 <p>Levels are a powerful aspect of factors, let’s take a deeper look at this:</p>
-<pre class="r"><code>c(1:12)</code></pre>
-<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10 11 12</code></pre>
+<pre class="r"><code>c(12:1)</code></pre>
+<pre><code>##  [1] 12 11 10  9  8  7  6  5  4  3  2  1</code></pre>
 <pre class="r"><code>c(&quot;apples&quot;, &quot;oranges&quot;, &quot;pears&quot;, &quot;bananas&quot;)</code></pre>
 <pre><code>## [1] &quot;apples&quot;  &quot;oranges&quot; &quot;pears&quot;   &quot;bananas&quot;</code></pre>
 <pre class="r"><code>nums=factor(c(12:1))
@@ -631,21 +635,553 @@ fruits</code></pre>
 ## Levels: apples pears oranges bananas</code></pre>
 <p>The order of a factor can determine, for example, the order your data is displayed on a plot (as we shall see later).</p>
 </div>
+<div id="packages-the-tidyverse-and-tidy-data" class="section level2">
+<h2>4. Packages, the tidyverse and tidy data</h2>
+<div id="a.-what-is-a-package" class="section level4">
+<h4>a. What is a package?</h4>
+<p>Everything we’ve discussed so far is part of the base R language. These are functions that R knows out of the box. Packages extend that language for specific purposes: it’s a vocabulary lesson or “extension pack” for R. Packages are a collection of functions for you to use, loosely organized by purpose or field. Some packages are designed for field-specific purposes and others are more general. Other scientists can upload their packages into repositories, which stores them and allows them to be easily downloaded. CRAN (The Comprehensive R Archive Network) is a major repository for R packages, but there are others, such as Bioconductor.</p>
+<p>Packages will have manuals that explain each function in the package and each of its arguments. Packages will often also have tutorials or vignettes via vignette() that walk you through basic usage. These are a good jumping off point if you want to explore a new package. Packages and their documentation can be updated and maintained by scientists who write them.</p>
+<p>To install a package, you can use the command install.packages(). You can install packages by supplying a character or vector of characters: “package” or c(“package 1”, “package 2”).</p>
+<p>Use this command: &gt;install.packages(“readr”)</p>
+<p>Packages will be downloaded and stored as a binary that you can call with the command library(package). Even if you have installed a package, a new session of R will be unaware of it until you call it with library(). The argument for library is the name of the package, so it doesn’t have to be in quotes (a character to your computer).</p>
+<pre class="r"><code>library(readr)</code></pre>
+<p>The functions in the package readr are now available to our computer. We can check this by opening a help window on readr or clicking on the Packages tab. To access help on any function or package, type into the council ?package or ?function. You can also use the searchbar in the RStudio Help tab.</p>
+<p>We can try: &gt;?readr</p>
 </div>
-<div id="loading-data" class="section level2">
-<h2>3. Loading data</h2>
+<div id="b.-what-is-the-tidyverse" class="section level4">
+<h4>b. What is the tidyverse?</h4>
+<p>The tidyverse is a collection of packages developed and maintained by data scientists at RStudio. These packages are ggplot2 (for data visualization), dplyr (for data manipulation), tidyr (to help tidy data), readr (to read data), purr (to streamline functions), tibble (for tidy data frames- tibble class), stringr (for wrangling character strings), forcats (for managing factors). Installing and loading “tidyverse” will install and load each of these packages. library(“tidyverse”) is the at the top of many R scripts.</p>
+<p>Each of these packages has stellar documentation, and we will only touch on the wonderful things some of them can do. I highly recommend reading the documentation of tidyverse packages you think would be useful to you in full: <a href="https://www.tidyverse.org/packages/" class="uri">https://www.tidyverse.org/packages/</a></p>
 </div>
-<div id="working-with-data" class="section level2">
-<h2>4. Working with data</h2>
+<div id="c.-what-is-tidy-data" class="section level4">
+<h4>c. What is tidy data?</h4>
+<p>The tidyverse is oriented around the concept of tidy data. This is data which is formatted such that each column represents a unique variable or measurement and each row represents a single experimental unit.</p>
+<p>Let’s break down an example. If you’re conducting a simple experiment examining blood feeding preference for mosquitoes, you may design it so that you offer 20 female mosquitoes either of two sources of blood (horse or goose blood) and repeat this experiment in triplicate. You may measure how much time each female spends feeding.</p>
+<p>To tidily format this data, you will give each individual mosquito her own row, and the columns will be: blood source (horse or goose), individual number (1-20), replicate (1-3) and time spent feeding (s). It may sound intuitive, but this basic principle for recording and thinking about your data allows for powerful, fast and (relatively) painless data processing.</p>
+<p>This formatting will result in data that is easy for your computer to manage. #Show the data.</p>
 </div>
-<div id="functions-and-loops" class="section level2">
-<h2>5. Functions and Loops</h2>
+<div id="working-with-data" class="section level3">
+<h3>5. Working with data</h3>
+<p>Data analysis in R is streamlined by the various tidyverse packages. We will use some below.</p>
+<p>R is certainly equipped to do any kind of data manipulation; however, particularly when you’re starting out, don’t be afraid to make a small change in some other program (like Excel) to speed up your analysis. As you learn R, even minor data manipulation will become easier in RStudio.</p>
+<div id="a.-loading-data" class="section level4">
+<h4>a. Loading data</h4>
+<p>There are a variety of ways to load data in R. The simplest is to code data in manually. A data frame specifies columns and its contents, so for the example above.</p>
+<pre class="r"><code>#Create each column
+blood=rep(c(&quot;goose&quot;, &quot;horse&quot;), each=60)
+individual=rep(c(1:20), times=6)
+replicate=rep(c(1:3), each=20, times=2)
+time=rnorm(n=120, mean=60, sd=30)
+
+#Combine into a data frame
+mosq.dat=data.frame(blood, individual, replicate, time)
+
+dim(mosq.dat)</code></pre>
+<pre><code>## [1] 120   4</code></pre>
+<pre class="r"><code>str(mosq.dat)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    120 obs. of  4 variables:
+##  $ blood     : chr  &quot;goose&quot; &quot;goose&quot; &quot;goose&quot; &quot;goose&quot; ...
+##  $ individual: int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ replicate : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ time      : num  52.3 101 55.8 27.3 90 ...</code></pre>
+<p>This would also work if our objects were nested within the data.frame() function. A tibble can be made the same way using the function tibble().</p>
+<p>R also has data built in. You can peruse these datasets by running the function data(). These are immediately accessible to any R user simply by calling their names. Rather unfortunately, the only insect-oriented data is InsectSprays. This is described as “Effectiveness of Insect Sprays” and is described simply: “The counts of insects in agricultural experimental units treated with different insecticides.” Despite this simplistic view of IPM, which dates back to a data analysis paper from 1942, we will use this simple data for manipulation below.</p>
+<pre class="r"><code>dat=InsectSprays</code></pre>
+<p>Typically, you will import in files you have generated yourself. Base R has the function read.csv() and readr provides read_csv(). The readr option will import data as a tibble and has more options that are intuitive. However, RStudio has an “Import Dataset” button, which gives you a user interface for either option. I recommend using this and checking the preview provided. Both will return in your console the command for importing that data.</p>
+<p>We will import our own comma separated values file (csv) containing iNaturalist observations for Monarch butterflies from 2018-2020. This command was generated using the RStudio “Import Dataset” button, in which we specified the name iNat.dat (much easier to manage than “iNat_monarch2018_2020”)</p>
+<pre class="r"><code>iNat.dat &lt;- read.csv(&quot;Data/iNat_monarch2018_2020.csv&quot;)</code></pre>
 </div>
-<div id="plotting-in-r" class="section level2">
-<h2>6. Plotting in R</h2>
+<div id="b.-manipulating-data" class="section level4">
+<h4>b. Manipulating data</h4>
+<p>Now that we have our data loaded, we can manipulate it. Let’s use some special characters to subsetting our InsectSpray data. $ will allow you to select specific columns. You can create new columns using this operator, as well.</p>
+<pre class="r"><code>dat</code></pre>
+<pre><code>##    count spray
+## 1     10     A
+## 2      7     A
+## 3     20     A
+## 4     14     A
+## 5     14     A
+## 6     12     A
+## 7     10     A
+## 8     23     A
+## 9     17     A
+## 10    20     A
+## 11    14     A
+## 12    13     A
+## 13    11     B
+## 14    17     B
+## 15    21     B
+## 16    11     B
+## 17    16     B
+## 18    14     B
+## 19    17     B
+## 20    17     B
+## 21    19     B
+## 22    21     B
+## 23     7     B
+## 24    13     B
+## 25     0     C
+## 26     1     C
+## 27     7     C
+## 28     2     C
+## 29     3     C
+## 30     1     C
+## 31     2     C
+## 32     1     C
+## 33     3     C
+## 34     0     C
+## 35     1     C
+## 36     4     C
+## 37     3     D
+## 38     5     D
+## 39    12     D
+## 40     6     D
+## 41     4     D
+## 42     3     D
+## 43     5     D
+## 44     5     D
+## 45     5     D
+## 46     5     D
+## 47     2     D
+## 48     4     D
+## 49     3     E
+## 50     5     E
+## 51     3     E
+## 52     5     E
+## 53     3     E
+## 54     6     E
+## 55     1     E
+## 56     1     E
+## 57     3     E
+## 58     2     E
+## 59     6     E
+## 60     4     E
+## 61    11     F
+## 62     9     F
+## 63    15     F
+## 64    22     F
+## 65    15     F
+## 66    16     F
+## 67    13     F
+## 68    10     F
+## 69    26     F
+## 70    26     F
+## 71    24     F
+## 72    13     F</code></pre>
+<pre class="r"><code>dat$count</code></pre>
+<pre><code>##  [1] 10  7 20 14 14 12 10 23 17 20 14 13 11 17 21 11 16 14 17 17 19 21  7 13  0
+## [26]  1  7  2  3  1  2  1  3  0  1  4  3  5 12  6  4  3  5  5  5  5  2  4  3  5
+## [51]  3  5  3  6  1  1  3  2  6  4 11  9 15 22 15 16 13 10 26 26 24 13</code></pre>
+<pre class="r"><code>#Here we are creating the column &quot;n&quot; with the value 30
+dat$n=30</code></pre>
+<p>This operator can also calculate between columns (across a row).</p>
+<pre class="r"><code>dat$dead=dat$n-dat$count</code></pre>
+<p>Double brackets function similar to the $ operator, except you can include a number or a name. Single brackets allow you to pick specific cells by coordinates: [row, column]. If a comma is not included, the value is assigned to column.</p>
+<pre class="r"><code>dat[[1]]</code></pre>
+<pre><code>##  [1] 10  7 20 14 14 12 10 23 17 20 14 13 11 17 21 11 16 14 17 17 19 21  7 13  0
+## [26]  1  7  2  3  1  2  1  3  0  1  4  3  5 12  6  4  3  5  5  5  5  2  4  3  5
+## [51]  3  5  3  6  1  1  3  2  6  4 11  9 15 22 15 16 13 10 26 26 24 13</code></pre>
+<pre class="r"><code>dat[[&quot;count&quot;]]</code></pre>
+<pre><code>##  [1] 10  7 20 14 14 12 10 23 17 20 14 13 11 17 21 11 16 14 17 17 19 21  7 13  0
+## [26]  1  7  2  3  1  2  1  3  0  1  4  3  5 12  6  4  3  5  5  5  5  2  4  3  5
+## [51]  3  5  3  6  1  1  3  2  6  4 11  9 15 22 15 16 13 10 26 26 24 13</code></pre>
+<pre class="r"><code>#This command will extract the second row
+dat[2,]</code></pre>
+<pre><code>##   count spray  n dead
+## 2     7     A 30   23</code></pre>
+<pre class="r"><code>#This command will extract the second column
+dat[2]</code></pre>
+<pre><code>##    spray
+## 1      A
+## 2      A
+## 3      A
+## 4      A
+## 5      A
+## 6      A
+## 7      A
+## 8      A
+## 9      A
+## 10     A
+## 11     A
+## 12     A
+## 13     B
+## 14     B
+## 15     B
+## 16     B
+## 17     B
+## 18     B
+## 19     B
+## 20     B
+## 21     B
+## 22     B
+## 23     B
+## 24     B
+## 25     C
+## 26     C
+## 27     C
+## 28     C
+## 29     C
+## 30     C
+## 31     C
+## 32     C
+## 33     C
+## 34     C
+## 35     C
+## 36     C
+## 37     D
+## 38     D
+## 39     D
+## 40     D
+## 41     D
+## 42     D
+## 43     D
+## 44     D
+## 45     D
+## 46     D
+## 47     D
+## 48     D
+## 49     E
+## 50     E
+## 51     E
+## 52     E
+## 53     E
+## 54     E
+## 55     E
+## 56     E
+## 57     E
+## 58     E
+## 59     E
+## 60     E
+## 61     F
+## 62     F
+## 63     F
+## 64     F
+## 65     F
+## 66     F
+## 67     F
+## 68     F
+## 69     F
+## 70     F
+## 71     F
+## 72     F</code></pre>
+<pre class="r"><code>#This command will extract the value from the first column and the second through fourth row
+dat[2:4,1]</code></pre>
+<pre><code>## [1]  7 20 14</code></pre>
+<p>The subset() function can select rows from a data frame based on a logical expression (T/F statement). We can select rows where &gt;6 died like this:</p>
+<pre class="r"><code>subset(x=dat, subset=dat$dead&gt;6)</code></pre>
+<pre><code>##    count spray  n dead
+## 1     10     A 30   20
+## 2      7     A 30   23
+## 3     20     A 30   10
+## 4     14     A 30   16
+## 5     14     A 30   16
+## 6     12     A 30   18
+## 7     10     A 30   20
+## 8     23     A 30    7
+## 9     17     A 30   13
+## 10    20     A 30   10
+## 11    14     A 30   16
+## 12    13     A 30   17
+## 13    11     B 30   19
+## 14    17     B 30   13
+## 15    21     B 30    9
+## 16    11     B 30   19
+## 17    16     B 30   14
+## 18    14     B 30   16
+## 19    17     B 30   13
+## 20    17     B 30   13
+## 21    19     B 30   11
+## 22    21     B 30    9
+## 23     7     B 30   23
+## 24    13     B 30   17
+## 25     0     C 30   30
+## 26     1     C 30   29
+## 27     7     C 30   23
+## 28     2     C 30   28
+## 29     3     C 30   27
+## 30     1     C 30   29
+## 31     2     C 30   28
+## 32     1     C 30   29
+## 33     3     C 30   27
+## 34     0     C 30   30
+## 35     1     C 30   29
+## 36     4     C 30   26
+## 37     3     D 30   27
+## 38     5     D 30   25
+## 39    12     D 30   18
+## 40     6     D 30   24
+## 41     4     D 30   26
+## 42     3     D 30   27
+## 43     5     D 30   25
+## 44     5     D 30   25
+## 45     5     D 30   25
+## 46     5     D 30   25
+## 47     2     D 30   28
+## 48     4     D 30   26
+## 49     3     E 30   27
+## 50     5     E 30   25
+## 51     3     E 30   27
+## 52     5     E 30   25
+## 53     3     E 30   27
+## 54     6     E 30   24
+## 55     1     E 30   29
+## 56     1     E 30   29
+## 57     3     E 30   27
+## 58     2     E 30   28
+## 59     6     E 30   24
+## 60     4     E 30   26
+## 61    11     F 30   19
+## 62     9     F 30   21
+## 63    15     F 30   15
+## 64    22     F 30    8
+## 65    15     F 30   15
+## 66    16     F 30   14
+## 67    13     F 30   17
+## 68    10     F 30   20
+## 72    13     F 30   17</code></pre>
+<p>Another useful function for subsetting is grep(). This function searches for patterns and returns where in a sequence that pattern occurs. We can use grep to find each row that contains our pattern “2” in the column count (i.e., 20, 12 and 2 would be included because they contain 2).</p>
+<pre class="r"><code>#grep() returns the row numbers
+grep(&quot;2&quot;, dat$count)</code></pre>
+<pre><code>##  [1]  3  6  8 10 15 22 28 31 39 47 58 64 69 70 71</code></pre>
+<pre class="r"><code>#We can combine this with [] to subset those rows from our entire data frame
+#Note: we need to include a comma after grep() so that [] does not default to columns
+dat[grep(&quot;2&quot;, dat$count),]</code></pre>
+<pre><code>##    count spray  n dead
+## 3     20     A 30   10
+## 6     12     A 30   18
+## 8     23     A 30    7
+## 10    20     A 30   10
+## 15    21     B 30    9
+## 22    21     B 30    9
+## 28     2     C 30   28
+## 31     2     C 30   28
+## 39    12     D 30   18
+## 47     2     D 30   28
+## 58     2     E 30   28
+## 64    22     F 30    8
+## 69    26     F 30    4
+## 70    26     F 30    4
+## 71    24     F 30    6</code></pre>
+<p>There are also dplyr options for subsetting that are very intuitive.</p>
+<pre class="r"><code>#Since this is our first time using dplyr, we will call the tidyverse which loads dplyr
+#install.packages(&#39;tidyverse&#39;)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.2     ✓ dplyr   1.0.1
+## ✓ tibble  3.0.3     ✓ stringr 1.4.0
+## ✓ tidyr   1.1.1     ✓ forcats 0.5.0
+## ✓ purrr   0.3.4</code></pre>
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>filter(dat, dat$count&gt;6)</code></pre>
+<pre><code>##    count spray  n dead
+## 1     10     A 30   20
+## 2      7     A 30   23
+## 3     20     A 30   10
+## 4     14     A 30   16
+## 5     14     A 30   16
+## 6     12     A 30   18
+## 7     10     A 30   20
+## 8     23     A 30    7
+## 9     17     A 30   13
+## 10    20     A 30   10
+## 11    14     A 30   16
+## 12    13     A 30   17
+## 13    11     B 30   19
+## 14    17     B 30   13
+## 15    21     B 30    9
+## 16    11     B 30   19
+## 17    16     B 30   14
+## 18    14     B 30   16
+## 19    17     B 30   13
+## 20    17     B 30   13
+## 21    19     B 30   11
+## 22    21     B 30    9
+## 23     7     B 30   23
+## 24    13     B 30   17
+## 25     7     C 30   23
+## 26    12     D 30   18
+## 27    11     F 30   19
+## 28     9     F 30   21
+## 29    15     F 30   15
+## 30    22     F 30    8
+## 31    15     F 30   15
+## 32    16     F 30   14
+## 33    13     F 30   17
+## 34    10     F 30   20
+## 35    26     F 30    4
+## 36    26     F 30    4
+## 37    24     F 30    6
+## 38    13     F 30   17</code></pre>
+<pre class="r"><code>slice_head(dat, prop=.25)</code></pre>
+<pre><code>##    count spray  n dead
+## 1     10     A 30   20
+## 2      7     A 30   23
+## 3     20     A 30   10
+## 4     14     A 30   16
+## 5     14     A 30   16
+## 6     12     A 30   18
+## 7     10     A 30   20
+## 8     23     A 30    7
+## 9     17     A 30   13
+## 10    20     A 30   10
+## 11    14     A 30   16
+## 12    13     A 30   17
+## 13    11     B 30   19
+## 14    17     B 30   13
+## 15    21     B 30    9
+## 16    11     B 30   19
+## 17    16     B 30   14
+## 18    14     B 30   16</code></pre>
+<pre class="r"><code>select(dat, c(count, spray))</code></pre>
+<pre><code>##    count spray
+## 1     10     A
+## 2      7     A
+## 3     20     A
+## 4     14     A
+## 5     14     A
+## 6     12     A
+## 7     10     A
+## 8     23     A
+## 9     17     A
+## 10    20     A
+## 11    14     A
+## 12    13     A
+## 13    11     B
+## 14    17     B
+## 15    21     B
+## 16    11     B
+## 17    16     B
+## 18    14     B
+## 19    17     B
+## 20    17     B
+## 21    19     B
+## 22    21     B
+## 23     7     B
+## 24    13     B
+## 25     0     C
+## 26     1     C
+## 27     7     C
+## 28     2     C
+## 29     3     C
+## 30     1     C
+## 31     2     C
+## 32     1     C
+## 33     3     C
+## 34     0     C
+## 35     1     C
+## 36     4     C
+## 37     3     D
+## 38     5     D
+## 39    12     D
+## 40     6     D
+## 41     4     D
+## 42     3     D
+## 43     5     D
+## 44     5     D
+## 45     5     D
+## 46     5     D
+## 47     2     D
+## 48     4     D
+## 49     3     E
+## 50     5     E
+## 51     3     E
+## 52     5     E
+## 53     3     E
+## 54     6     E
+## 55     1     E
+## 56     1     E
+## 57     3     E
+## 58     2     E
+## 59     6     E
+## 60     4     E
+## 61    11     F
+## 62     9     F
+## 63    15     F
+## 64    22     F
+## 65    15     F
+## 66    16     F
+## 67    13     F
+## 68    10     F
+## 69    26     F
+## 70    26     F
+## 71    24     F
+## 72    13     F</code></pre>
 </div>
-<div id="mapping-in-r" class="section level2">
-<h2>7. Mapping in R</h2>
+<div id="c.-transformation-grouping-and-calculations" class="section level4">
+<h4>c. Transformation, grouping and calculations</h4>
+<p>Here we will further solidify the concept of pipes. Pipes in R look like this %&gt;% and they originate from the package magrittr. RStudio recognizes pipes and will indent automatically when you return on a line ending in a pipe. Pipes send the output from one command into the next command. Pipes allow you to code complex things that are also readable: without pipes, you would need to create a number of intermediate objects or nest many functions to reach the same end.</p>
+<p>In our first example, we will use pipes to group our observations by spray type, then take the mean number of insects remaining. We will use the following dplyr functions:</p>
+<ul>
+<li>select(“list of columns”)</li>
+<li>group_by(“grouping list”)</li>
+<li>summarize(“column”=“calculation”)</li>
+</ul>
+<pre class="r"><code>#First we send our dat data frame into the pipe
+dat.stat= dat %&gt;%
+#We&#39;ve created new columns so we&#39;ll select our original two InsectSpray columns
+  select(count, spray) %&gt;%
+#In the line below, we are grouping the data frame by 
+  group_by(spray) %&gt;%
+#Once grouped, we will calculate the mean and stdev using the functions mean() and sd()
+  summarize(mn=mean(count), sd=sd(count))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<p>This quickly tells us the very simple story that, whatever these sprays were in 1942, far fewer insects survived in sprays C, D and E.</p>
+<p>Our last example with this data set is pivoting. pivot_wide will transform your data to maximize columns (think “less tidy”) and pivot_longer will do the opposite. Certainly you will work with data where one of these transformations is necessary. Call the vignette vignette(“pivot”).</p>
+<pre class="r"><code>#First, we will add an individual column to our InsectSpray dataset
+dat = dat %&gt;%
+  group_by(spray) %&gt;%
+  mutate(individual=c(1:12))
+
+wide.dat= dat %&gt;%
+  select(count, spray, individual) %&gt;%
+  pivot_wider(names_from=individual, values_from=count)
+
+wide.dat</code></pre>
+<pre><code>## # A tibble: 6 x 13
+## # Groups:   spray [6]
+##   spray   `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`   `9`  `10`  `11`  `12`
+##   &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 A        10     7    20    14    14    12    10    23    17    20    14    13
+## 2 B        11    17    21    11    16    14    17    17    19    21     7    13
+## 3 C         0     1     7     2     3     1     2     1     3     0     1     4
+## 4 D         3     5    12     6     4     3     5     5     5     5     2     4
+## 5 E         3     5     3     5     3     6     1     1     3     2     6     4
+## 6 F        11     9    15    22    15    16    13    10    26    26    24    13</code></pre>
+<pre class="r"><code>#We can transform this back with the complementary function pivot_longer
+long.dat = wide.dat %&gt;%
+#Below, we can use - to signal which columns should not be pivoted. This is shorthand for the argument &quot;cols&quot;, which alternatively needs a list of columns to pivot.
+  pivot_longer(-spray, names_to=&quot;individual&quot;, values_to=&quot;count&quot;)
+
+long.dat</code></pre>
+<pre><code>## # A tibble: 72 x 3
+## # Groups:   spray [6]
+##    spray individual count
+##    &lt;fct&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1 A     1             10
+##  2 A     2              7
+##  3 A     3             20
+##  4 A     4             14
+##  5 A     5             14
+##  6 A     6             12
+##  7 A     7             10
+##  8 A     8             23
+##  9 A     9             17
+## 10 A     10            20
+## # … with 62 more rows</code></pre>
+<p>Before we move on, we will make some adjustments to our iNaturalist data. This process of tidying or transforming your data before visualization is called wrangling or munging.</p>
+</div>
+<div id="d.-exporting-tables" class="section level4">
+<h4>d. Exporting tables</h4>
+</div>
+<div id="plotting-in-r" class="section level4">
+<h4>6. Plotting in R</h4>
+</div>
+<div id="mapping-in-r" class="section level4">
+<h4>7. Mapping in R</h4>
+</div>
+</div>
 </div>
 
 
