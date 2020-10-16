@@ -2,15 +2,25 @@
 title: 'Session 2: Introduction to frequentist models in R'
 author: "Natalie Z. Kerr & Brian Lovett"
 date: "9/7/2020"
-output: html_document
-editor_options: 
+output:
+  html_document:
+    df_print: paged
+ooutput:
+  html_document:
+    toc: yes
+editor_options:
   chunk_output_type: console
 ---
 
-**Description:** Here, we will cover how to run general linear models (**LMs**; e.g., Gaussian/Normal distribution), generalized linear models (**GLMs**; e.g., binomial, Poisson for count data), and mixed models (**LMMs/GLMMs**; e.g., fixed vs. random effects). We will also expand on models using Poisson-distributed data by evaluating how to deal with common issues such as when your count data are over-dispersed/under-dispersed (e.g., Poisson vs. Negative Binomial vs. Conway-Maxwell-Poisson), when counts should be represented as rates (e.g., counts per unit time using Poisson offsets), and when your count data are zero-inflated (e.g., 0-inflated regression vs hurdle models). Finally, we will finish the session on appropriate ways to run model selection techniques for finding a winning model from a set of candidate models, using likelihood ratio tests for nested models and Akaike Information Criteria (AIC). This course will not be a statistics course, so people will need to be familiar with most of these models.
+<br> 
 
+### Workshop description
 
-## 1. Packages required
+Here, we will cover how to run general linear models (LMs; e.g., Gaussian/Normal distribution), generalized linear models (GLMs; e.g., binomial, Poisson for count data), and mixed models (LMMs/GLMMs; e.g., fixed vs. random effects). We will also expand on models using Poisson-distributed data by evaluating how to deal with common issues such as when your count data are over-dispersed/under-dispersed (e.g., Poisson vs. Negative Binomial vs. Conway-Maxwell-Poisson), when counts should be represented as rates (e.g., counts per unit time using Poisson offsets), and when your count data are zero-inflated (e.g., 0-inflated regression vs hurdle models). Finally, we will finish the session on appropriate ways to run model selection techniques for finding a winning model from a set of candidate models, using likelihood ratio tests for nested models and Akaike Information Criteria (AIC). This course will not be a statistics course, so people will need to be familiar with most of these models.
+
+<br>
+
+### Packages required
 
 Before running the following code, please open the R Project for the EntSoc R Webinar series in the main folder ("EntSoc_R-Webinar_2020.Rproj"). 
 
@@ -20,68 +30,88 @@ Here, is a list of packages required for this R course. You will need to install
 
 Once installed, we can run these packages in advance. I will inform you whenever we are running a function from each of these packages throughout this session. 
 
-```{r Packages required, message = F }
+```{r Packages required, message=F, warning=F }
 
 library(here) # for navigation among folders
+library(tidyverse) # for all tidyverse packages
 
 library(pscl) # for zero-inflated regression models
-library(glmmTMB) # for glmmTMB::glmmTMB() for hurdle models
+library(glmmTMB) # for hurdle models
+library(lme4) # for mixed models
 
-library(lme4) # lme4::glmer() for mixed models
-
-library(car) # for likelihood ratio tests
+library(car) # for likelihood ratio tests/marginal hypothesis testing
 library(lmtest) # for likelihood ratio tests
-
 library(bbmle) # for AIC
 
 ```
 
-Today, we will cover three main statistical distributions: 
+Today, we will cover five main topics: 
 
-   1. Normal/Gaussian
-   2. Binomial
-   3. Poisson
+   1. Linear models 
+   2. Model selection approaches
+   3. Generalized linear models
+   4. Common issues with Poisson-distributed data
+   5. Mixed models
 
-We will cover alternative statistical distributions to the Poisson distribution, when encountering common issues with count data.
+We will cover alternative statistical distributions to the Normal and Poisson distributions, when encountering common issues with these data.
 
-## 2. Introduction to *general* linear models, LMs
+<br> 
 
-First, we will cover running linear models for normally-distributed (or Gaussian distributed) data. Linear models can be used to carry out single stratum analysis of variance (i.e., intercept-only models), analysis of covariance (ANOVA, i.e., differences among groups), and regression. 
+### 1. Introduction to linear models, LMs
 
-We will use Brown hare (*Lepus europaeus*) data over 17 years (1992-2008) at 56 sites in 8 regions of Switzerland for most of our examples today. Sites vary in area, elevation, and belong to two habitat types (arable and grassland). These data are used in the [2010 Marc Kery book](https://www.mbr-pwrc.usgs.gov/software/kerybook/) that contains examples of both R and WinBUGS code. 
+First, we will cover running linear models for normally-distributed (or Gaussian distributed) data. Linear models can be used to carry out single stratum analysis of variance (i.e., intercept-only models), analysis of variance (ANOVA, i.e., differences among groups), regression, and analysis of covariance (ANCOVA).  
+
+We will use Brown hare (*Lepus europaeus*) data over 17 years (1992-2008) at 56 sites in 8 regions of Switzerland for most of our examples today. Sites vary in area, elevation, and belong to two habitat types (arable and grassland). Mean density is the count1 of hares offset by the area of the site (i.e., mean.density = count1/area). These data are used in the [2010 Marc Kery book](https://www.mbr-pwrc.usgs.gov/software/kerybook/) that contains examples of both R and WinBUGS code.  
 
 ```{r Hares data, include = T }
 
 hares <- read.table(here::here("Session 2", "Data", "hares.data.txt"), header = T)
 head(hares)
-View(hares)
 
 ```
 
+<br>
 
-### a. First, we can run an "intercept-only" model to estimate the mean density of Brown hares across Switzerland. 
+#### Intercept-only models 
+
+First, we will run a single stratum analysis of variance (aka "intercept-only") model to estimate the mean density of Brown hares across Switzerland.  
 
 ```{r Intercept-only model }
 
 dens1 <- lm(mean.density ~ 1, data = hares)
 summary(dens1)
 
-mean(hares$mean.density, na.rm = T) # remove
-sd(hares$mean.density, na.rm = T)/sqrt(nrow(subset(hares, !is.na(mean.density)))) # remove
+```
+  
+Interpreting the summary output:    
+  
+* *Call:* model formula.
+* *Residuals:* difference between the observed response values and model predicted values. Mean should be zero.  
+* *Coefficients:* 
+  + Model estimate
+  + SE of model estimate
+  + t-value (SDs our estimate is from 0)  
+  + P-value (i.e., probability of observing a value equal or larger than *t*, i.e., is our model estimate is significantly different from 0?)
+* *Residual Standard Error:* average amount that the response will deviate from our model estimate.  
+
+```{r Interpreting the summary output }
+
+mean(dens1$residuals) # mean of the residuals is close to zero
+
+mean(hares$mean.density, na.rm = T) # Mean
+sd(hares$mean.density, na.rm = T)/sqrt(nrow(subset(hares, !is.na(mean.density)))) # SE = sd/sqrt(n)
+
+summary(dens1)$sigma / summary(dens1)$coefficient[1] # 80% percentage error 
 
 ```
 
-Summary output: 
-  * Call - model formula. 
-  * Residuals - difference between the observed response values and model predicted values. Mean should be zero. 
-  * Coefficients - model estimate, its SE, t-value (SDs our estimate is from 0)
-  * P-value - probability of observing a value equal or larger than *t*, i.e., is our model estimate is significantly different from 0?
+<br>
 
-### b. One-way ANOVA
+#### One-way ANOVA
 
-Here, we will run a one-way analysis of variance (ANOVA) model to estimate mean density in the two habitat types: arable vs. grassland. 
+Here, we will run a one-way analysis of variance (ANOVA) model to estimate mean density of brown hares in the two habitat types: arable vs. grassland. 
 
-```{r ANOVA }
+```{r One-way ANOVA }
 
 dens2 <- lm(mean.density ~ landuse, data = hares)
 summary(dens2)
@@ -90,42 +120,58 @@ Anova(dens2) # analysis of variance table, not to be confused with the model
 
 ```
 
-Here, we used what is referred to as "effect parameterization". The dummy variable (or *(Intercept)*) is arable land, and the *landusegrass* is difference to grassland relative to the dummy variable. The mean density in the arable land is `r coef(dens2)[1]` and the mean density in the grassland is `r coef(dens2)[1] + coef(dens)[2]`, i.e., y = B1 + B2 x 1.
+The lm() summary also contains two more outputs:   
+  
+* *Multiple R-squared:* determined how well your model fits your data (aka coefficient of determination), it subtracts the residual error (i.e., variance in the predictor) from the variance in Y (i.e., variance in the response). Here, only 6.3% of the landuse explains the variance in mean density of hares.   
+* *Adjusted R-squared:* provides the same information, but adjusts the multiple R-squared value by the number of variables in your model.   
+* *F-statistic:* checks that at least one of your coefficients in your model is nonzero.   
 
-```{r Effects vs. means parametrization }
+Here, we used what is referred to as "effect parameterization". The dummy variable (or *Intercept*, $\beta_{0}$) is arable land, and the *landusegrass* is difference to grassland relative to the dummy variable (or *slope*, $\beta_{1}$). The mean density in the arable land is `r coef(dens2)[1]` and the mean density in the grassland is `r coef(dens2)[1] + coef(dens2)[2]`, i.e., $y = \beta_{0} + \beta_{1} x$ where x is either "1" for grassland or "0" for arable.  
+
+```{r Effects parametrization }
+
+subset(hares, !is.na(mean.density))[70:80,]
+model.matrix(dens2)[70:80,]  # each row is an observation used to find MLE 
 
 effects.par <- lm(mean.density ~ 1 + landuse, data = hares)
 summary(effects.par) # same model as dens2
 
+```
+
+However, we can also use the "means parameterization" approach for our model structure, where each group is **not** in reference to the "dummy" variable.  
+
+```{r Means parameterization }
+
 means.par <- lm(mean.density ~ -1 + landuse, data = hares)
 summary(means.par) # removes dummy variable
 
-model.matrix(means.par)[70:80, ] # each row is an observation used to find MLE 
-model.matrix(effects.par)[70:80,] 
 subset(hares, !is.na(mean.density))[70:80,]
+model.matrix(effects.par)[70:80,]  # each row is an observation used to find MLE 
+model.matrix(means.par)[70:80, ]
 
 ```
 
+<br> 
 
-### Practice example 1: ANOVA
-
-Using the built-in "ToothGrowth" R dataset, run an ANOvA to estimate tooth growth for three dosages of vitamin C. Run two models using the effects and means parameterization approach. 
+**Practice example 1:** Using the built-in "ToothGrowth" R dataset, run an ANOvA to estimate tooth growth for three dosages of vitamin C. Run two models using the effects and means parameterization approach.  
 
 > data("ToothGrowth") # to load data
 
-ToothGrowth data set contains data from an experiment studying the effect of vitamin C on tooth growth in 60 Guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, (orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+ToothGrowth data set contains data from an experiment studying the effect of vitamin C on tooth growth in 60 Guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods: orange juice (OJ) or ascorbic acid (a form of vitamin C, VC).  
 
 
-```{r Practice 1 }
+```{r Practice 1 - one-way ANOVA }
+
 
 ```
 
+<br>
 
-### c. Two-way ANOVA
+#### Two-way ANOVA
 
-Here, we will run a two-way ANOVA (without an interactive effect) of landuse and region on mean density of Brown hares. 
+Here, we will run a two-way ANOVA without an interactive effect of both landuse and region on mean density of Brown hares. 
 
-```{r Two-way ANOVA }
+```{r Two-way ANOVA without interaction }
 
 dens4 <- lm(mean.density ~ region + landuse, data = hares)
 summary(dens4)
@@ -136,144 +182,583 @@ summary(dens5) # mildly more comprehensible
 
 ```
 
+Here, we will run a two-way ANOVA to evaluate the interactive effects of both vitamin C dosage and supplement type on tooth growth in guinea pigs.  
 
-### d. Linear regression
+```{r Two-way ANOVA with interaction }
 
-```{r }
+grow1 <- lm(len ~ supp + factor(dose) + supp:factor(dose), data = ToothGrowth)
+summary(grow1)
 
-dens6 <- lm(mean.density ~ elevation, data = hares)
-summary(dens6)
+Anova(grow1)
 
-Anova(dens6)
-with(hares, plot(elevation, mean.density))
+grow2 <- lm(len ~ supp * factor(dose), data = ToothGrowth) # same model as grow1 
+summary(grow2)
 
 ```
 
+<br>
 
+#### Linear regression
 
-```{r}
+Here, we will use the brown hare dataset to run a linear regression evaluating whether mean density of brown hares changes linearly with year in the grassland sites. 
 
-dens7 <- lm(mean.density ~ elevation + I(elevation*elevation), data = hares)
+```{r Linear regression }
+
+hares.grass <- subset(hares, landuse == "grass")
+
+dens6 <- lm(mean.density ~ year, data = hares.grass)
+summary(dens6)
+
+Anova(dens6)
+with(subset(hares, landuse == "grass"), plot(year, mean.density))
+
+```
+
+Mean density of brown hares does not seem to change linearly with year. Instead, there seems to be a drop in mean density around the year 2000.  
+
+We can also run *n*-degree polynomial linear functions. I have choosen to only run a second-degree polynomial relationship (e.g., quadratic function) to evaluate whether there is an intermediate elevation that has the highest mean density of brown hares.  
+
+```{r Polynomial relationship }
+
+dens7 <- lm(mean.density ~ year + I(year*year), data = hares.grass)
 summary(dens7)
 
 Anova(dens7)
 
 ```
 
-```{r}
+Note that we need to use the function *I()* for the quadratic term, which treats the variable "as is" rather than an interaction between two variables (as seen in the two-way ANOVA with an interaction). 
 
+We can predict values across the observed elevations, then plot our model predicted values.  
+
+```{r Non-linear - predicted values }
+
+year.vals <- seq(min(hares.grass$year, na.rm = T), max(hares.grass$year, na.rm = T), length.out = 100)
+pred.vals <- coef(dens7)[1] + coef(dens7)[2]*year.vals + coef(dens7)[3]*year.vals*year.vals
+
+with(hares.grass, plot(year, mean.density, pch = 19))
+points(year.vals, pred.vals, type = "l")
+
+```
+
+<br>
+
+**Practice example 2:** Using the built-in "ToothGrowth" R dataset, run linear regression to determine whether tooth growth changes linearly with vitamin C dosage. 
+
+```{r Practice 2 - Regression }
+
+tg1 <- lm(len ~ dose, data = ToothGrowth)
+
+```
+
+<br>
+
+#### ANCOVA
+
+Here, we are running an analysis of covariance (ANCOVA) to evaluate the interactive effects of landuse and year on mean density of brown hares. Run two models with a linear term for elevation and one with a quadratic term. 
+
+```{r ANCOVA }
+
+dens8 <- lm(mean.density ~ year*landuse, data = hares) 
+summary(dens8)
+Anova(dens8)
+
+dens9 <- lm(mean.density ~ year*landuse + I(year*year)*landuse, data = hares) 
+summary(dens9)
+Anova(dens9)
+
+```
+
+<br>
+
+**Practice example 3:** From the infected individuals only, run an ANCOVA evaluating the interactive effects of sex and kidney fat index (KFI) on the estimated number of *Elaphostrongylus cervi* parasites.
+
+This example uses epidemiological data from Vicente et al. (2006) that took observations on wild boar and red deer reared on a number of estates in Spain. Here, the dataset contains information on the red deer only. Observations on red deer were taken at different farms, months, year (0-5 are 2000-2005, 99 is 1999), and sexes (1 - Male, 2 - Female). For each observation, the length of the animal (LCT, length of head-body), kidney-fat index (KFI), the number of *Elaphostrongylus cervi* parasites (Ecervi), and the presence (0, 1) of Tuberculosis were taken. These data are used in examples from the [Zuur book](https://highstat.com/index.php/a-beginner-s-guide-to-r).  
+
+
+```{r Practice 3 - ANCOVA }
+
+deer <- read.table(here::here("Session 2", "Data", "Deer.txt"), header = T)
+
+ec1 <- lm(Ecervi ~ KFI*Sex, data = subset(deer, Ecervi > 0))
 
 ```
 
 
-### e. ANCOVA
+<br>
 
-```{r}
+#### Assumptions of normality
 
-
-```
-
-
-
-
-Before continuing with these models, we always want to test for the assumptions of normality on our response variable. 
-  1. Linearity of the data: linear relationship between x and y
-  2. Normality of residuals: residual errors are normally-distributed
-  3. Homogeneity of residuals variance (i.e., homoscedasicity): constant variance of the residuals
-  4. Independence of residuals error terms.
+Before continuing with this statistical distribution, we always want to test for the assumptions of normality on our response variable. A linear regression has four assumptions:  
+  1. *Linearity of the data:* linear relationship between *x* and *y*. (residuals vs fitted values)
+  2. *Normality of residuals:* residual errors are normally-distributed. (QQ plot)
+  3. *Homogeneity of residuals variance (i.e., homoscedasicity):* constant variance of the residuals. (scale-location plot)
+  4. *Independence of residuals error terms:* depends on what may be dependent on your residuals. 
 
 We can test for relevant assumptions using diagnostic plots:
 
-```{r Tests for normality }
+```{r Diagnostic plots }
 
-plot(dens1, 2) # QQ plot - examine whether residuals are normally-distributed
+dens7 <- lm(mean.density ~ year + I(year*year), data = hares.grass)
+
+plot(dens7, 1) # Residuals vs fitted - red line is flat meaning linear relationsip
+plot(dens7, 2) # QQ plot - examine whether residuals are normally-distributed
+plot(dens7, 3) # Scale-location - homogeneity of variance of residuals (homoscedasicity) if horizontal line with equal spread
+plot(dens7, 4) # Cook's distance - identify extreme values and their obs. number
+plot(dens7, 5) # Residuals vs leverage - for identifying influential cases or extreme values
 
 hist(hares$mean.density)
 
 ```
 
-Here, we can see that these data are right skewed, but also zero truncated. First, we can use the common approach when our data do not met the assumptions of normality, which is to log-transform our data. 
+It is difficult to do a general test for dependence of the residual error term. You will need to know why your residual error terms may be dependent: either residuals can correlate with another variable (e.g., check residuals-fitted plot) or residuals can correlate with a nearby residual (e.g., autocorrelation in time series data).
 
+```{r Independence of residual error terms - time series }
 
-```{r Dealing with non-normal data }
+View(hares.grass)
 
-dens2 <- lm(log(mean.density) ~ 1, data = hares)
-plot(dens2, 2) # left skewed
+LI04.grass <- subset(hares.grass, site == "LI04" & !is.na(mean.density))
+acf(LI04.grass$mean.density)
 
-hist(log(hares$mean.density)) 
-
-```
-
-Instead of transforming our data to fit a statistical distribution, we can choose a statistical distribution that fits our data. Since our data are zero truncated, we can use an alternative statistical distribution that allows for normally-distributed data that are bound by 0 to infinity. 
-
-```{r Gamma distribution }
-
-dens2 <- glm(mean.density ~ 1, family = Gamma, data = hares)
-plot(dens2, 2)
+LU01.grass <- subset(hares.grass, site == "LU01" & !is.na(mean.density))
+acf(LU01.grass$mean.density)
 
 ```
 
+In any case, we can see that these data are negatively (left) skewed and bound by 0 to $\infty$. First, we can use the most common approach when our data do not met the assumptions of normality, which is to transform our response variable, *y*. There are many ways to transform your data (e.g., log, square-root, arcsine). However, we will only cover the log transformation of our response variable, *y* (i.e., log(*y*) is normal given *x*):
+
+$$ log(y_{i}) = \beta_{0} + \beta_{1}x_{i} $$
+
+```{r Data transformation }
+
+dens10 <- glm(log(mean.density) ~ year + I(year*year), family = gaussian, data = hares.grass)
+
+plot(dens10, 1) # linear relationship between x and y (good!)
+plot(dens10, 2) # residuals are not normality-distributed, mild right-skew (ok)
+plot(dens10, 3) # mild constant variance of the residuals (ok)
+
+hist(hares$mean.density) # negatively skewed/left skewed
+hist(log(hares$mean.density)) # positively skewed/right skewed
+
+```
+
+Instead of transforming our response to fit a statistical distribution (i.e., log(*y*) is normal given *x*), we can choose a statistical distribution that fits our data. First, we might want to try the log-link Gaussian distribution (i.e., mean of log(*y*) responses linearly to *x*), such that:
+
+$$ln(\mu) = \beta_{0} + \beta_{1}x $$
+
+```{r Log-link Gaussian }
+
+dens11 <- glm(mean.density ~ elevation  + I(elevation*elevation), family = gaussian(link = "log"), data = hares)
+
+plot(dens11, 1) # relationship between x and y is not linearly (bad)
+plot(dens11, 2) # residuals are not normality-distributed, left-skewed (bad)
+plot(dens11, 3) # hetereoscedasicity should exist, since the variance changes with the mean
+
+```
 
 
 
+such as the Gamma distribution (i.e., y is normal given x on either the log- or inverse-link function scale) or the log-link Gaussian, whereby:
 
 
 
-## 3. Introduction to general*ized* linear models, GLMs
+Since our data are bound at zero, we can use an alternative statistical distribution that allows for non-negative, skewed, continuous data that are bound by 0 to infinity. The Gamma distribution (either log Gamma or inverse Gamma) assumes heavier tailed/skewed distribution, particularly the inverse Gamma distribution.  
 
 
-### i. Binomial proccesses
+```{r Log-link Gamma distribution }
 
-Here, we will use generalized linear models to estimate a response that is binomial, e.g., successes vs. failures (or k events and N trials) or presence/absense data. 
+dens11 <- glm(mean.density ~ elevation  + I(elevation*elevation), family = Gamma(link = "log"), data = hares)
+plot(dens11, 1) 
+plot(dens11, 2) # address skew
+plot(dens11, 3) # hetereoscedasicity should exist, since the variance changes with the mean
+
+```
+
+The Gamma distribution (or any distribution with a scale term) does not need to worry about the same assumptions of a linear regression, except the deviance residuals should be normal and hetereoscadicity should be observed.
+
 
 
 ```{r}
 
+dens11 <- glm(mean.density ~ elevation  + I(elevation*elevation), family = gaussian(link = "log"), data = hares)
+
+
 ```
 
-### ii. Count data
+
+
+<br>
+
+**Practice example 4:** Test the assumptions of normality for the model run for practice 3 (i.e., model without an interactive term). Then, find the appropriate approach to deal with any assumptions that are not met.  
+
+
+```{r Practice 4 - Testing assumptions of linear regression }
+
+ec2 <- lm(Ecervi ~ KFI + Sex, data = subset(deer, Ecervi > 0))
+plot(ec2)
+
+ec3 <- lm(log(Ecervi) ~ KFI  + Sex, data = subset(deer, Ecervi > 0))
+plot(ec3)
+
+ec4 <- glm(Ecervi ~ KFI + Sex, family = Gamma, data = subset(deer, Ecervi > 0))
+plot(ec4)
+
+```
+
+
+<br>
+
+### 2. Model selection 
+
+Here, I will outline the general procedure for model selection in two parts:   
+  
+1. Select probability distribution:   
+  a. 1st Principles  
+
+
+![caption](SelectingProbabilityDistributions_FirstPrinciples.jpg)
+  
+  b. Analysis of data  
+   
+Here, we could select our probability distribution 
+   
+```{r}
+
+```
+   
+   
+2. Selecting variables 
+  
 
 ```{r}
 
 
 ```
 
+<br>
 
-### iii. Gaussian vs. Gamma
 
-```{r}
 
+
+
+### 3. Introduction to generalized linear models, GLMs
+
+Generalized linear models connect a mean of the response to its predictors in a linear way through *link functions*. Therefore, it produces coefficients of a linear relationship on the link function scale. Instead of transforming data to fit a normal distribution, 
+
+$$\mu_{ln(y)} = \beta_{0} + \beta_{1}x_{1} + ...$$
+
+GLMs allows data to follow alternative error distributions, such as a Poisson error distribution on a natural log link function scale:   
+
+$$ln(\mu_{y}) = \beta_{0} + \beta_{1}x_{1} + ...$$
+
+<br>
+
+#### Binomial proccesses
+
+Here, we will use generalized linear models to estimate a response that is binomially-distributed. A binomial response can either be at the individual-level (i.e., presence/absence) or at the group-level (e.g., k events and N trials).  
+
+For our first example, we will be using data from a laboratory diapause experiment to estimate the probability of entering diapause as a function of photoperiod. I put eggs from the mustard white butterfly (*Pieris oleracea*) in five photoperiod treatments, then measured at the individual-level whether they survived (1 for survival, 2 for died) and whether they diapaused (e.g., 1 for entering diapause, 0 for eclosing) conditioned on surviving. These data were used in [Kerr et al. 2020](https://onlinelibrary.wiley.com/doi/abs/10.1111/gcb.14959).  
+
+We can run a logit-link GLM to estimate the probability of diapausing conditioned on survival as a function of photoperiod, as follows: 
+
+```{r Individual-level binary response - Presence/absence }
+
+diap <- read.csv(here::here("Session 2", "Data", "Diapausing_example.csv"))
+head(diap)
+
+pd1 <- glm(Diapause ~ Treatment, family = binomial, data = subset(diap, Sex == "female"))
+summary(pd1)
+Anova(pd1)
+
+light.vals <- seq(min(diap$Treatment), max(diap$Treatment), length.out = 50)
+pd.logit <- coef(pd1)[1] + coef(pd1)[2]*light.vals
+pd.pred <- exp(coef(pd1)[1] + coef(pd1)[2]*light.vals)/(1 + exp(coef(pd1)[1] + coef(pd1)[2]*light.vals)) # manual back-transformation
+
+plot(light.vals, pd.logit, type = "l", ylab = "Diapause probability on the logit-link scale", xlab = "Photoperiod")
+plot(light.vals, plogis(pd.logit), type = "l", ylab = "Diapause probability", xlab = "Photoperiod")
+
+```
+
+First, the summary output includes two more outputs for a GLM: 
+* *Null deviance:* is the 2(LL(Saturated Model) - LL(Null Model)), where the saturated model assumes each data point has its own parameter (*n* parameters) and the null assumes one parameter for all data (1 parameter).
+* *Residual deviance:* is the 2(LL(Saturated Model - LL(Proposed Model)) and refers the goodness-of-fit of the proposed model, where your data can be explained by *p* parameters and an intercept term. 
+
+To compare your null with the proposed, you can calculate the chi-squared value $\chi^2 = null deviance-residual deviance$ and the degrees of freedom $df Proposed - df Null$.
+
+
+For our second example, we will be using data from an overwintering experiment to estimate the overwinter survival of diapausing pupa of the mustard white butterfly. Each bug dorm had a fall count of diapausing pupa (*N*, trials) and a spring count of the number of emerging butterflies (*k*, events).
+
+We can run an intercept-only logit-link GLM to estimate the overwinter survival of the mustard white butterfly, as follows: 
+
+```{r Group-level binary response - k/N }
+
+surv <- read.csv(here::here("Session 2", "Data", "OverwinterSurv_example.csv"))
+head(surv)
+
+ws1 <- glm(cbind(Spring.count, Fall.count - Spring.count) ~ 1, family = binomial, data = surv)
+summary(ws1)  
+
+plogis(coef(ws1)) # 13% probability of surviving the winter
+
+```
+
+<br>
+
+**Practice example 5:** Using the deer data, run a logit-link GLM to estimate the probability that a red deer will have a parasite given its kidney fat index (KFI) and sex. 
+
+```{r Practice 5 - Probability of infection }
+
+deer$P.Ecervi <- deer$Ecervi
+deer$P.Ecervi[deer$P.Ecervi > 0] <- 1
+
+pec1 <- glm(P.Ecervi ~ KFI*Sex, family = binomial, data = deer)
 
 ```
 
 
-## 4. Common issues for Poisson-distributed data
+#### Count data
 
-### i. When data are over-dispersed or under-dispersed
+Here, we will be exploring running log-link GLMs using the Poisson error distribution. Here, we have counts of wolves in each year from 1982 to 2012 across five US states. 
 
-A common issue when fitting Poisson models is overdispersion, i.e., when count data has more variability than expected for a Poisson distribution. For Poisson models, data are less likely to be underdispersed for this given distribution. However, this is still likely to happen for biological data. Such as 
+```{r Wolves data }
 
-
-
-```{r Overdispersion }
-
+wolves <- read.csv(here::here("Session 2", "Data", "NRMwolves.csv"))
 
 ```
 
 
-Undispersion is more common in ecology with species that have small clutch/litter sizes. For example, when a bird may only lay up to 6 eggs per clutch.
+First, we will evaluate whether the total number of wolves has changed over a 10-year period from 1994-2003. 
 
-```{r Underdispersion }
+```{r Wolves - 10 years }
 
+with(wolves[13:22,], plot(year, num.wolves))
+
+wv10a <- glm(num.wolves ~ year, family = poisson(link = "identity"), data = wolves[13:22,])
+coef(wv10a) # year is the change in the # of wolves per year 
+
+wv10b <- glm(num.wolves ~ year, family = poisson(link = "log"), data = wolves[13:22,])
+exp(coef(wv10b)) # slope is the population growth rate
+
+with(wolves[13:22,], plot(year, num.wolves))
+points(1994:2003, coef(wv10a)[1] + coef(wv10a)[2]*1994:2003, type = "l", col = "blue") # linear growth
+points(1994:2003, exp(coef(wv10b)[1] + coef(wv10b)[2]*1994:2003), type = "l", col = "red") # unlimited expontential growth 
+
+```
+
+Second, we will evaluate whether the total number of wolves has changed over the full 30-year period from 1983 to 2012. 
+
+```{r Wolves - 30 years }
+
+with(wolves, plot(year, num.wolves))
+
+wv30a <- glm(num.wolves ~ year, family = poisson(link = "log"), data = wolves[2:31,]) # unlimited exp growth
+coef(wv30a) 
+
+wv30b <- glm(num.wolves ~ year + I(year*year), family = poisson(link = "log"), data = wolves[2:31,]) # quadratic function model
+
+with(wolves[2:31,], plot(year, num.wolves))
+points(1983:2012, exp(coef(wv30a)[1] + coef(wv30a)[2]*1983:2012), type = "l", col = "blue") 
+points(1983:2012, exp(coef(wv30b)[1] + coef(wv30b)[2]*1983:2012 + coef(wv30b)[3]*1983:2012*1983:2012), type = "l", col = "red") 
+
+```
+
+<br>
+
+**Practice example 6:**
+
+
+```{r Practice 6 - Poisson distribution }
 
 ```
 
 
-### ii. When counts should be rates 
+<br>
+
+### 4. Common issues for Poisson-distributed data
+
+#### ... when counts should be rates 
 
 A common issue in ecology is when each observtion of count data are not always equally in represented. For example, you may find yourself in a situation where each observation is collected over different lengths of time or you count a number out of a total number.  
 
-```{r Poisson offsets }
+
+Here, we will use the [Audubon Christmas bird count](www.christmasbirdcount.org) 2013 data on Northern Flickers across New England. Since observation periods differ, we want to model our counts are rates (# per hour of observation).
+
+```{r Poisson offsets - flickers }
+
+flickers <- read.csv(here::here("Session 2", "Data", "NE_flickers.csv"))
+head(flickers)
+
+nf1 <- glm(Count ~ 1, offset = log(hours), family = poisson, data = flickers)
+summary(nf1)
+
+exp(coef(nf1)) # 0.07 birds per hour
+
+```
+
+
+We can also use offsets for running a process error model for evaluating population dynamics, where the previous time step offsets the counts in the next step. Therefore, you get an estimated growth rate for each time step of the series. 
+
+```{r Poisson offsets - wolves for process error model }
+
+wv30c <- glm(num.wolves[2:31] ~ 1, offset = log(num.wolves[1:30]), family = poisson(link = "log"), data = wolves) 
+             
+with(wolves[2:31,], plot(year, num.wolves, ylim = c(0, 2000)))
+points(1983:2012, exp(coef(wv30a)[1] + coef(wv30a)[2]*1983:2012), type = "l", col = "blue") # observation error
+points(1983:2012, exp(coef(wv30b)[1] + coef(wv30b)[2]*1983:2012 + coef(wv30b)[3]*1983:2012*1983:2012), type = "l", col = "red")
+points(1983:2012, predict(wv30c, type = "response"), type = "l", col = "green") # process error
+
+```
+
+<br> 
+
+**Practice example 7:** Similarly, we could also model the brown hare counts per area as a Poisson offset instead of mean.density using the normal, lognormal, or Gamma distribution. Do you find similar estimates for mean density for the two landuse types when using Poisson distribution compared to lognormal distribution?
+
+```{r Example 7 - Poisson offsets }
+
+dens12 <- glm(count1 ~ 1, offset = log(area), family = poisson, data = hares)
+summary(dens12)
+
+dens13 <- glm(mean.density ~ 1, family = gaussian(link = "log"), data = hares)
+
+exp(coef(dens12)) # 4.4 brown hares per hectare 
+
+```
+
+
+#### ... when data are over-dispersed or under-dispersed
+
+A common issue when fitting Poisson models is overdispersion, i.e., when count data has more variability than expected for a Poisson distribution. For Poisson models, data are less likely to be underdispersed for this given distribution. However, this is still likely to happen for biological data.  
+
+To test for overdispersion, the residual deviance should be equal to the degrees of freedom. In other words, the ratio of residual deviance/degrees of freedom should be equal to 1. If the ratio is greater than 1, then your data is more dispersed than the Poisson error distribution permits. If the ratio is less than 1, then your data are less dispersed than the Poisson error distribution.  
+
+Let's test whether flicker counts are overdispersed, using the "intercept-only" model from the Poisson offset example #1. 
+
+```{r Testing for overdispersion }
+
+summary(nf1)
+
+nf1$deviance/nf1$df.residual # overdispersed
+
+```
+
+There are multiple ways to deal with overdispersed count data, such as observation-level random effects, Conway-Maxwell-Poisson distribution, or the negative binomial error distribution. Here, we will use the negative binomial distribution, which is the most common approach for overdispersion.    
+
+```{r Negative binomial distribution }
+
+nf2 <- glmmTMB(Count ~ 1, offset = log(hours), family = nbinom2, data = flickers)
+summary(nf2)$coefficients$cond # allows for greater variance
+summary(nf1)$coefficients
+
+```
+
+Undispersion is more common in ecology with species that have small clutch/litter sizes. For example, when a bird may only lay up to 6 eggs per clutch.
+
+Here, we have a dataset on begging behaviour of nestling barn owls that may have an example of underdispersed count data. Roulin and Bersier (2007) looked at nestlings’ response to the presence of the mother and the father. Using microphones inside and a video camera outside the nests, studying vocal begging behaviour when the parents bring prey for 27 nests. We use ‘sibling negotiation,’ defined as the number of calls by the nestlings in the 30-second interval immediately prior to the arrival of a parent, divided by the number of nestlings. Data were collected between 21.30 hours and 05.30 hours on two consecutive nights. The variable ArrivalTime indicates the time at which a parent arrived at the perch with prey.  
+
+Here, we want to evaluate whether food treatment impacts the brood size of barn owls. 
+
+```{r Testing for underdispersion }
+
+owls <- read.table(here::here("Session 2", "Data", "owls.txt"), header = T)
+  
+bs1 <- glm(BroodSize ~ FoodTreatment, family = poisson, data = owls)
+summary(bs1)
+
+summary(bs1)$deviance/summary(bs1)$df.residual # underdispersed, < 1
+  
+```
+
+To address underdispersed count data, the most appropriate distribution would be the Conway-Maxwell-Poisson distribution adds a parameter to the Poisson distribution to account for either underdispersion or overdispersion.  
+
+```{r Conway-Maxwell-Poisson (CMP) distribution }
+
+bs2 <- glmmTMB(BroodSize ~ FoodTreatment, family = compois, data = owls)
+
+```
+
+
+**Practice example X:** 
+
+```{r Practice 8 - Overdispersion/underdispersion }
+
+
+```
+
+
+#### ... when counts are zero-inflated
+
+Here, we will run two different models when you encounter many zeros in your count data (i.e., zero-inflated count data). We can take two potential approaches: zero-inflated regression or hurdle model. The first assumes that not all zeros are "true" zeros and that some are part of the Poisson process. This can commonly occur due to observation error. For example, your count data may be number of butterflies seen, but you are not sure that not seeing an individual means that there were actually no individuals present. For the zero-inflated models, the binomial process may determine whether a location is actually suitable habitat and the count process may represent the quality of the suitable habitat. However, remember that a count of 0 may not necessarily mean that it is a not suitable habitat. 
+
+A zero-inflated Poisson model is required for this process, since not all zeros are true. Therefore, a zeroinflated model evaluates the nonzero and zero process together by evaluating the probability that a zero comes from the main "nonzero" distribution vs. the binomial distribution (i.e., an excess zero). 
+
+> pscl::zerinfl(y ~ x_count | x_zero)
+
+```{r ZIP using pscl }
+
+hist(flickers$Count) # excess zeros
+
+ZiP1 <- zeroinfl(Count ~ 1 | 1, offset = log(hours), dist = "negbin", data = flickers)
+summary(ZiP1)
+
+ZiP2 <- zeroinfl(Count ~ Latitude | 1, offset = log(hours), dist = "negbin", data = flickers)
+summary(ZiP2)
+Anova(ZiP2)
+
+ZiP3 <- zeroinfl(Count ~ Latitude | Latitude, offset = log(hours), dist = "negbin", data = flickers)
+
+```
+
+Note that the 'glmmTMB' package allows for both zeroinflated mixed models and hurdle mixed models.
+
+```{r ZIP using glmmTMB }
+
+ZiP4 <- glmmTMB(Count ~ Latitude, offset = log(hours), ziformula = ~1, family = "nbinom2", data = flickers)
+summary(ZiP4)$coefficients
+
+ZiP5 <- glmmTMB(Count ~ Latitude, offset = log(hours), ziformula = ~., family = "nbinom2", data = flickers)
+summary(ZiP5)$coefficients
+
+```
+
+
+For hurdle models, the nonzero and zero processes are modelled separately, and therefore, we assume all zeros are true zeros. For the deer data, let's assume that method for detecting *Elaphostrongylus cervi* parasites in red deer is very accurate and all zeros are true zeros. Here, let's evaluate whether the probability of infection dependent on sex and the infection intensity is dependent on kidney fat index (KFI).  
+
+
+```{r Hurdle models using glm }
+
+with(deer, hist(Ecervi)) # zero-inflated
+with(subset(deer, P.Ecervi == 1), hist(Ecervi))
+with(subset(deer, P.Ecervi == 1), hist(log(Ecervi)))
+
+h_zero <- glm(P.Ecervi ~ Sex, family = binomial, data = deer)
+Anova(h_zero)
+coef(h_zero)
+
+h_nzero <- glm(log(Ecervi) ~ KFI, family = gaussian, data = subset(deer, P.Ecervi == 1))
+Anova(h_nzero)
+summary(h_nzero)
+
+```
+
+A Gamma distribution cannot be overdispersed. The glmmTMB package also allows for hurdle models for count data using the "truncated_poisson" 
+
+```{r Hurdle models using glmmTMB }
+
+hist(Owls$SiblingNegotiation)
+
+#h_mod <- glmmTMB(SiblingNegotiation ~ BroodSize, family = truncated)
+
+```
+
+
+
+<br>
+
+**Practice example 9**: Similar to the Northern Flickers, the Eastern bluebird data was also collected across New England from the [Audubon Christmas bird count](www.christmasbirdcount.org). Eastern Bluebirds have breeding grounds in the northern half of the United States, but all year grounds south of Massachusetts down to Texas and exclusive wintering grounds in Texas and northern Mexico.
+
+Using the "bluebird.csv" data, choose whether a zeroinflated or hurdle model of bird counts with an offset of observation hours is more appropriate for these data. Evaluate both latitude on the zero (i.e., probability that it has migrated) and nonzero (i.e., # of all-year resident birds) process parts. 
+
+```{r Practice 9 - excess zeros }
 
 
 
@@ -281,58 +766,73 @@ A common issue in ecology is when each observtion of count data are not always e
 ```
 
 
-## iii. When counts are zero-inflated
+<br>
 
-Here, we will run two different models when you encounter many zeros in your count data (i.e., zero-inflated count data). We can take two potential approaches: zero-inflated regression or hurdle model. The first assumes that not all zeros are "true" zeros. This can commonly occur due to observation error, e.g., your count data may be number of cells/bees/butterflies seen, but you are not sure that not seeing an individual means that there were actually no individuals present. 
+### 5. Mixed models
 
-A zero-inflated regression model is required for this process, since not all zeros are true. 
+Here, we evaluated models with fixed effects. Fixed effects are the covariates of interest. Here, we will incorporate models that evaluate both fixed and random effects called "**mixed models**". 
+
+#### Random-coefficient models
+
+First, we will look at the 
+
+Here, we will run mixed models for the deer data when looking only at the 
+
+```{r Random intercept model }
+
+hoppers <- read.csv(here::here("Session 2", "Data", "GrasshopperSong.csv"))
+hist(log(deer$Ecervi))
+
+#ri1 <- glmmTMB(log(Ecervi) ~ KFI + (1|Farm), family = gaussian, data = subset(deer, !is.na(Ecervi)))
+#summary(ri1)
+
+```
+
+```{r Random slope model }
+
+#ri2 <- glmmTMB(log(Ecervi) ~ KFI + (0 + KFI |Farm), family = gaussian, data = deer)
+#summary(ri2)
+
+```
+
+```{r Random intercept and slope, but no interaction }
+
+#ri3 <- glmmTMB(log(Ecervi) ~ KFI + (1|Farm) + (0 + KFI |Farm), family = gaussian, data = deer)
+
+```
+
+```{r Random intercept and slope with an interaction }
+
+#ri4 <- glmmTMB(log(Ecervi) ~ KFI + (0 + KFI |Farm), family = gaussian, data = deer)
+
+```
+
+**Practice example 10:** 
+
+```{r Practice 10 - Random-coefficient models }
 
 
+```
 
-```{r ZIP }
+#### Nested random effects
+
+```{r Nested random effects }
 
 ```
 
 
-```{r Hurdle models }
+**Practice example 11:** 
 
-```
-
-
-
-## 5. Mixed models
-
-Fixed effects vs. random effects.
-
-### i. Random-coefficient models
-
-```{r}
+```{r Practice 11 - Nested random effects }
 
 
 ```
 
+<br>
 
 
 
-### ii. Nested random effects
-
-```{r}
-
-```
-
-
-
-## 6. Model selection 
-
-Here, I will outline the general procedure for model selection on a set of candidate mixed models. 
-
-```{r}
-
-
-```
-
-
-## 7. Introduction to simulating data 
+### 6. Introduction to simulating data 
 
 Normal distribution and how to run linear models in R.
 
@@ -351,10 +851,10 @@ dnorm(x = 650, mean = mu, sd = sd)
 
 ```
 
+<br>
 
-## 8. Sources
+## Sources
 
-  * Marc Kery (2010) Introduction to WinBUgS for Ecologists. Academic Press, Burlinton.
-  
-  * 
+* Marc Kery (2010) Introduction to WinBUgS for Ecologists. Academic Press, Burlinton.  
+* Zuur, A.F, E.N. Ieno, and E. Meesters. (2009) A Beginner’s Guide to R. 
 
