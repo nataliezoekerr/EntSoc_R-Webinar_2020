@@ -4,9 +4,11 @@ author: "Brian Lovett & Natalie Z. Kerr"
 date: "10/19/2020"
 output:
   word_document: default
+  pdf_document:
+    toc: yes
   html_document:
-    toc: true
-    toc_float: true
+    toc: yes
+    toc_float: yes
 editor_options:
   chunk_output_type: console
 urlcolor: blue
@@ -452,7 +454,6 @@ dat[grep("2", dat$count),]
 ### c. Exporting tables
 Straightforward options such as write.csv() allow you to export objects out of R when you specify the object to export and the name for the new file. The default is to write directly to your working directory, so be careful to not overwrite anything important!
 
-
 ## 7. Packages, the tidyverse and tidy data
 ### a. What is a package?
 Everything we've discussed so far is part of the base R language. These are functions that R knows out of the box. Packages extend that language for specific purposes: it's a vocabulary lesson or "extension pack" for R. Packages are a collection of functions for you to use, loosely organized by purpose or field. Some packages are designed for field-specific purposes and others are more general. Other scientists can upload their packages into repositories, which stores them and allows them to be easily downloaded. CRAN (The Comprehensive R Archive Network) is a major repository for R packages, but there are others, such as Bioconductor.
@@ -716,4 +717,4 @@ anim_save(filename="Output/monarch.gif", animation=last_animation())
 
 Above is our gif that shows (month-by-month) where monarchs butterflies were observed on iNaturalist.
 
-There is no one way to do something in programming! In this case, I supplied data that I manually pulled from iNaturalist. However, there is an R package that was written to streamline downloading and mapping iNaturalist data called [rinat](https://github.com/ropensci/rinat). Somewhat ironically, their first example for usage is pulling monarch butterfly data too. Try it out!
+There is no one way to program something! In this case, I supplied data that I manually pulled from iNaturalist. However, there is an R package that was written to streamline downloading and mapping iNaturalist data called [rinat](https://github.com/ropensci/rinat). Somewhat ironically, their first example for usage is pulling monarch butterfly data too. Try it out!
