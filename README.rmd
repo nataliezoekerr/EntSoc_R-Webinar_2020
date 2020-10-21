@@ -13,7 +13,7 @@ Before reviewing the workshop content for both sessions. You will have to have b
 https://cloud.r-project.org/) and [R Studio](https://rstudio.com/products/rstudio/) downloaded. 
 
 
-For session 1 and 2, you will need at least R version 3.2 or higher. To check your R Version, you can run the following code in your R console: 
+For session 1 and 2, you will need at least R version 3.6.2 or higher. To check your R Version, you can run the following code in your R console: 
 
 ```{r eval=F }
 
