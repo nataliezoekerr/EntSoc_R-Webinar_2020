@@ -166,7 +166,7 @@ c(12:1)
 c("apples", "oranges", "pears", "bananas")
 
 nums <- factor(c(12:1))
-fruits <- factor(c("apples", "oranges", "pears", "bananas"))
+fruits <- factor(c("apples", "oranges", "pears", "bananas", "apples"))
 
 nums
 levels(nums)
@@ -183,7 +183,7 @@ as.numeric(as.character(fruits))
 ```
 
 **Practice exercise 1:**
-Write your own function.
+Create an object.
 
 1. Create a vector of 1-4
 2. Store this vector as an object
@@ -199,7 +199,7 @@ Programming generally can be considered as a series of pipes: information goes i
 
 Functions can be thought of as verbs because they act on whatever objects you provide and often need additional information. Verbs not only tell you what is happening, but they also tell you something about when it happened and how many people were involved. The additional information you supply to functions are called arguments. Some are optional and others have defaults.
 
-### b. The anatomy of a function.
+### b. The anatomy of a function
 Regardless of what they do, functions share certain characteristics:
 
 * Function name (can be any word)
@@ -239,11 +239,13 @@ Since our object "seuss" contained numbers and words (words are "strings of char
 
 ### c. You can create your own functions!
 You may want to write your own function to streamline your code or share specific work flows with others. If you find yourself copying and hard-coding a few lines over and over, they may work better as a function.
+
 To write your own function, you need to specify the arguments of the function, the name of the function and the commands within the function.
 
 ```{r bespoke functions, include=T}
 # Here we will write a simple function that allows you to repeat "given numbers" (input: argument 1) x number of times" (n: argument 2) and take their sum. Within this custom function, we will use the functions rep(x, times) and sum(..., na.rm=F).
 
+nums
 nums2 <- rep(x=nums, times=2)
 
 sum(nums2)
@@ -315,7 +317,7 @@ The function if() can not handle vectors that have multiple values. In order to 
 
 ```{r numeric for() loops with if/then statements, include=T}
 if(nums<50){print("yes")
-  }else(print(no))
+  }else(print("no"))
 
 for(x in 1:length(nums)){
   if(nums[x]<50){print("yes")
@@ -496,7 +498,7 @@ Each of these packages has stellar documentation, and we will only touch on the 
 ### c. What is tidy data?
 The tidyverse is oriented around the concept of tidy data. This is data which is formatted such that each column represents a unique variable or measurement and each row represents a single experimental unit.
 
-Let's break down an example. If you're conducting a simple experiment examining blood feeding preference for mosquitoes, you may design it so that you offer 20 female mosquitoes either of two sources of blood (horse or goose blood) and repeat this experiment in triplicate. You may measure how much time each female spends feeding.
+Let's break down our example above. If you're conducting a simple experiment examining blood feeding preference for mosquitoes, you may design it so that you offer 20 female mosquitoes either of two sources of blood (horse or goose blood) and repeat this experiment in triplicate. You may measure how much time each female spends feeding.
 
 To tidily format this data, you will give each individual mosquito her own row, and the columns will be: blood source (horse or goose), individual number (1-20), replicate (1-3) and time spent feeding(s). It may sound intuitive, but this basic principle for recording and thinking about your data allows for powerful, fast and (relatively) painless data processing.
 
@@ -583,6 +585,7 @@ Once your ggplot() function is established, you will need to at least provide a 
 * geom_line() produces a line plot
 
 A basic ggplot bar plot will be defined as follows:
+
 ggplot(data=data, aes(x=column, y=column, color=column))+geom_col()
 
 First, we will plot our InsectSpray data.
@@ -663,10 +666,10 @@ In the following example, we will plot all iNaturalist monarch butterfly observa
 ```{r simple map, include=T}
 # install.packages(c('sf', 'ggthemes', 'rnaturalearth', 'rnaturalearthdata', 'lubridate', 'gganimate', 'gifski'))
 library(sf) # Special features
-library(ggthemes) #A ccess clean themes
+library(ggthemes) # Access clean themes
 library(rnaturalearth) # Interfaces with rnaturalearthdata
 library(rnaturalearthdata) # Database of spatial objects worldwide (i.e. all countries)
-library(lubridate) #
+library(lubridate) # Pull information from dates
 library(gganimate) # Creates animations of ggplot graphs
 library(gifski) # Renders gganimate animations as gifs
 
@@ -695,7 +698,7 @@ US.iNat.dat <- iNat.dat %>%
   filter(!is.na(Year), !is.na(Month), longitude>-125)
 
 monarch.map <- world.map +
-  geom_point(data=subset(US.iNat.dat), aes(x=longitude, y=latitude, color=Month)) +
+  geom_point(data=US.iNat.dat, aes(x=longitude, y=latitude, color=Month)) +
   coord_sf(xlim = c(-130, -50), ylim = c(0, 60))+
   scale_color_manual(values = terrain.colors(12))+facet_wrap(~Year)
 
