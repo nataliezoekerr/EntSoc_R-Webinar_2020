@@ -1,17 +1,17 @@
 ---
 title: 'Session 2: Intro to frequentist models in R'
 author: "Natalie Z. Kerr & Brian Lovett"
-date: "October 11, 2020"
+date: "October 21, 2020"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
+  word_document: default
   html_document:
     toc: yes
     toc_depth: 4
     toc_float:
       collapsed: no
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  word_document: default
 editor_options:
   chunk_output_type: console
 urlcolor: blue
@@ -305,7 +305,7 @@ points(0:21, pred.lin, type = "l", col = "blue") # linear function
 
 ```
 
-Note that we need to use the function *I()* for the quadratic term, which treats the variable "as is" rather than an interaction between two variables (as seen in the two-way ANOVA with an interaction). 
+Note that we need to use the function `I()` for the quadratic term, which treats the variable "as is" rather than an interaction between two variables (as seen in the two-way ANOVA with an interaction). 
 
 <br>
 
@@ -422,7 +422,7 @@ plot(dens8, 3) # constant variance of the residuals (ok)
 
 Compared to log-transformation of the *y* values, the log-link Gaussian does not seem to perform better when checking the assumptions of a linear regression. 
 
-We could also use the Gamma distribution that allows for non-negative, skewed, continuous data that are bound by 0 to infinity. The Gamma distribution (either log Gamma or inverse Gamma) assumes heavier tailed/skewed distribution, particularly the inverse Gamma distribution. 
+We could also use the Gamma distribution that allows for non-negative, skewed, continuous data that are bound by 0 to $\infty$. The Gamma distribution (either log Gamma or inverse Gamma) assumes heavier tailed/skewed distribution, particularly the inverse Gamma distribution. 
 
 ```{r Log-link Gamma distribution }
 
@@ -433,7 +433,7 @@ boot::glm.diag.plots(dens9, gamma.diag)
 
 ```
 
-The plot(dens9) does not provide the correct diagnostic plots for the Gamma distribution. The "boot" package allows us to assess the relevant assumptions for the Gamma distribution. The Gamma distribution (or any distribution with a scale term) does not need to worry about heteroscedasticity.
+The `plot(dens9)` does not provide the correct diagnostic plots for the Gamma distribution. The "boot" package allows us to assess the relevant assumptions for the Gamma distribution. The Gamma distribution (or any distribution with a scale term) does not need to worry about heteroscedasticity.
 
 <br>
 
@@ -441,7 +441,7 @@ The plot(dens9) does not provide the correct diagnostic plots for the Gamma dist
 
 > cw1 <- lm(weight ~ Time, data = ChickWeight)
 
-```{r Practice 5 - Testing assumptions of linear regression }
+```{r Practice 5 - Testing assumptions of linear regression, include = T }
 
 
 ```
@@ -458,7 +458,7 @@ Here, I will outline the general procedure for model selection in two parts: sel
 
   a. Based on first principles  
 
-![Source: B. Bolker (2008) Ecological Models and Data in R, Princeton University Press, Princeton, New Jersey, USA](SelectingProbabilityDistributions_FirstPrinciples.jpg){width = 100%} 
+![Source: B. Bolker (2008) Ecological Models and Data in R, Princeton University Press, Princeton, New Jersey, USA](SelectingProbabilityDistributions_FirstPrinciples.jpg)
 
 <br>
 
@@ -550,7 +550,7 @@ lrtest(treat_mod, add_mod)
 
 ### 3. Intro to generalized linear models
 
-Generalized linear models (GLMs) connect a mean of the response to its predictors in a linear way through *link functions*. Therefore, it produces coefficients of a linear relationship on the link function scale. Instead of transforming data to fit a normal distribution, such as the log transformation:
+Generalized linear models (GLMs) connect a mean of the response to its predictors in a linear way through "*link functions*". Therefore, it produces coefficients of a linear relationship on the link function scale. Instead of transforming data to fit a normal distribution, such as the log transformation:
  
 $$ln(y_{i}) = \beta_{0} + \beta_{1}x_{i} $$
  
@@ -560,6 +560,7 @@ $$\mu_{ln(y)} = \beta_{0} + \beta_{1}x_{1} $$
 GLMs allows data to follow alternative error distributions, such as a Poisson error distribution on a natural log link function scale:   
 
 $$ln(\mu_{y}) = \beta_{0} + \beta_{1}x_{1} $$
+where the log of mean $\mu_{y}$ is a linear function of *x*. 
 
 <br>
 
@@ -608,10 +609,11 @@ tail(manual.pred)
 ```
 
 First, the summary output includes two more outputs for a GLM: 
+
 * *Null deviance:* is the 2(LL(Saturated Model) - LL(Null Model)), where the saturated model assumes each data point has its own parameter (*n* parameters) and the null assumes one parameter for all data (1 parameter).
 * *Residual deviance:* is the 2(LL(Saturated Model - LL(Proposed Model)) and refers the goodness-of-fit of the proposed model, where your data can be explained by *p* parameters and an intercept term. 
 
-To compare your null with the proposed, you can calculate the chi-squared value $\chi^2 = null deviance - residual deviance$ and the degrees of freedom $df Proposed - df Null$.
+To compare your null with the proposed, you can calculate the chi-squared value ($\chi^2 = null deviance - residual deviance$) and the degrees of freedom ($df Proposed - df Null$).
 
 <br>
 
@@ -638,16 +640,17 @@ I think the group-level binary response has many potential applications:
 
 For example, I have used it to estimate the trap color of Venus flytraps based on crude categorization of color along a spectrum from green to dark red. 
 
-![Source: B. Trap color of Venus flytraps from four populations (or eight sub-sites) across their range](Data\Phenotypic-site-differences.jpg) 
+![Figure 2: Trap color of Venus flytraps from four populations (or eight sub-sites) across their range](Data\Phenotypic-site-differences.jpg) 
 
 The colors of traps were one of seven categories ranging from green, green-pink, pink, pink-red, red, red-dark red, and dark red. The total number of trials was 6, where green was 0 successes + 6 failures and dark red was 6 successes + 0 failures. 
 
 The following are three Bernoulli trials for three plants: 
+
 > cbind(0, 6) # green
 > cbind(3, 3) # pink-red
 > cbind(6, 0) # dark red
 
-![Source: B. Trap color of Venus flytraps from four populations (or eight sub-sites) across their range](Data\VFT_TrapColor_Sites.jpg) 
+![Figure 3. Trap color of Venus flytraps from four populations (or eight sub-sites) across their range](Data\VFT_TrapColor_Sites.jpg) 
 
 Another example could be estimating the day of spring emergence for a diapausing insect, where *N* trials is the 365 days of a year (assuming not a leap year) and *k* events is the number of days into the year when it emerged. In other words, the number of successes would be days from January 1st that it took to emerge and the number of failures would be the remaining days of the year. Then, you would get some probability (into the year) that an insect would emerge from diapause. You could multiple that probability estimate by the number of days in a year to convert back into "days until spring emergence". 
 
@@ -657,7 +660,7 @@ This binary "group-level" format has many potential ecological applications.
 
 **Practice example 6:** Using the deer data, run a logit-link GLM to estimate the probability that a red deer will have the parasite *Elaphostrongylus cervi* given its kidney fat index (KFI) and sex. Run marginal hypothesis testing to evaluate the interactive effects of these two covariates. 
 
-```{r Practice 6 - Probability of infection }
+```{r Practice 6 - Probability of infection, include = T }
 
 
 ```
@@ -668,7 +671,7 @@ This binary "group-level" format has many potential ecological applications.
 
 Here, we will be exploring running log-link GLMs using the Poisson error distribution. In simple terms, the Poisson distribution is used for discrete count data that are bound by 0 to $\infty$.
 
-In more complex terms, the Poisson distribution is like the binomial distribution in that it has a large "unknown" number of trials *N* and a small probability of an event $p = \lambda / N$, where $\lamdba$ is the *k* discrete events (or mean count estimate). The probability of given number of events can be thought of as the probability of counting an individual that occurs over a fixed interval of time or space.
+In more complex terms, the Poisson distribution is like the binomial distribution in that it has a large "unknown" number of trials *N* and a small probability of an event $p = \lambda / N$, where $\lambda$ is the *k* discrete events (or mean count estimate). The probability of given number of events can be thought of as the probability of counting an individual that occurs over a fixed interval of time or space.
 
 Here, we have counts of wolves in each year from 1982 to 2012 across five US states.   
 
@@ -721,11 +724,11 @@ points(1983:2012, exp(coef(wv30b)[1] + coef(wv30b)[2]*1983:2012 + coef(wv30b)[3]
 
 <br>
 
-**Practice example 7:** Using the "Bombus_eggs.rds" R object file, run a Poisson GLM to estimate the number of new eggs laid (in bumblebee colonies, *Bombus vosnesenskii*) as a function of days of the experiment ("Days"). Evaluate whether a model with a linear or quadratic function better fits these data. Then, plot the raw data with model predicted values from both models.  
+**Practice example 7:** Using the "Bombus_eggs.rds" R object file, run a Poisson GLM to estimate the number of new eggs laid in bumblebee colonies (*Bombus vosnesenskii*) as a function of days of the experiment ("Days"). Evaluate whether a model with a linear or quadratic function better fits these data. Then, plot the raw data with model predicted values from both models.  
 
 > readRDS() # for loading R object files
 
-```{r Practice 7 - Poisson distribution }
+```{r Practice 7 - Poisson distribution, include = T }
 
 
 ```
@@ -777,15 +780,14 @@ We can also use offsets for running a process error model for evaluating populat
 
 ```{r Poisson offsets - wolves for process error model }
 
-wv30a <- glm(num.wolves ~ year, 
-             family = poisson(link = "log"), data = wolves[2:31,]) # unlimited exp growth (observation error model)
+wv30a <- glm(num.wolves ~ year, family = poisson(link = "log"), data = wolves[2:31,]) # observation error model
 
 x = 1:30
 est.vals <- wolves$num.wolves[2]
 for(i in 2:30){ 
-  est.vals[i] <- wolves$num.wolves[i-1] * exp(coef(wv30a)[2])^x # simple discrete exp growth, N(t+x) = N(t) * r^x
+  est.vals[i] <- wolves$num.wolves[i-1] * exp(coef(wv30a)[2])^x[i] # simple discrete exp growth, N(t+x) = N(t) * r^x
 }
-est.vals 
+plot(x, est.vals) # exponential growth 
 
 wv30b <- glm(num.wolves ~ year + I(year*year), 
              family = poisson(link = "log"), data = wolves[2:31,]) # quadratic function model
@@ -808,7 +810,7 @@ ICtab(wv30a, wv30b, wv30c) # quadratic model wins
 
 **Practice example 8:** Similarly, we could also model the brown hare counts *per area* as a Poisson offset instead of log(mean.density) using the normal distribution. Do you find similar estimates for mean density for the two landuse types when using Poisson distribution compared to log-transformed data?
 
-```{r Example 8 - Poisson offsets }
+```{r Example 8 - Poisson offsets, include = T }
 
 
 ```
@@ -847,11 +849,11 @@ In both cases, these data are overdispersed for the Poisson distribution.
 
 There are multiple ways to deal with overdispersed count data: 
 
-* Negative binomial distribution (family = nbinom1 or nbinom2)
-* Conway-Maxwell-Poisson distribution (family = compois)
+* Negative binomial distribution (`family = nbinom1 or nbinom2`)
+* Conway-Maxwell-Poisson distribution (`family = compois`)
 * [Observation-level random effects](https://peerj.com/articles/616/)
 
-Here, we will use the negative binomial distribution, which is the most common approach for overdispersion. A negative binomial distribution is essentially the average of different Poisson distributions with different means. Unlike the Poisson distribution where the mean is equal to the limits, the variance of the negative binomial can be either linear ("nbinom1") or quaratic ("nbinom2") parameterization of the mean. Therefore, a negative binomial mean closer to its limit -> $\infty$ will resemble a Poisson distribution. But closer to the bound of 0, it allows for greater variance in relation to its mean.  
+Here, we will use the negative binomial distribution, which is the most common approach for overdispersion. A negative binomial distribution is essentially the average of different Poisson distributions with different means. Unlike the Poisson distribution where the mean is equal to the limits, the variance of the negative binomial can be either linear (`nbinom1`) or quaratic (`nbinom2`) parameterization of the mean. Therefore, a negative binomial mean closer to its limit -> $\infty$ will resemble a Poisson distribution. But closer to the bound of 0, it allows for greater variance in relation to its mean.  
 
 Let's re-run the intercept-only Poisson offset model for Northern Flicker counts using a negative binomial distribution using `glmmTMB` function in the `glmmTMB` package by Ben Bolker.
 
@@ -904,7 +906,7 @@ ICtab(bs1, bs2)
 
 ```
 
-You can also use the "quasipoisson" distribution for underdispersed count data. 
+The "quasipoisson" distribution (`family = quasipoisson`) can also be used for underdispersed count data. 
 
 <br>
 
@@ -927,7 +929,7 @@ You can implement zero-inflated models using `zeroinfl` function in the `pscl` p
 
 > pscl::zerinfl(formula = y ~ x_count | x_zero)
 
-However, we will be using the 'glmmTMB' package to run both zero-inflated and hurdle models, since this package has additional probability distributions not in `pscl` and it also allows for both these models to have mixed-effects, which we will discuss later.
+However, we will be using the `glmmTMB` package to run both zero-inflated and hurdle models, since this package has additional probability distributions not in `pscl` and it also allows for both these models to have mixed-effects, which we will discuss later.
 
 ```{r ZIP using glmmTMB }
 
@@ -945,7 +947,7 @@ summary(ZiP3)$coefficients
 ```
 
 For hurdle models, the nonzero and zero processes are modelled separately, and therefore, we assume all zeros are true zeros. 
-The glmmTMB package also allows for hurdle models for count data using the "truncated_poisson" family. Note that use of the "poisson" family would indicate a zero-inflated model. Here, we are using the owl dataset that is included in glmmTMB package. 
+The glmmTMB package also allows for hurdle models for count data using the "truncated" families (i.e., `family = truncated_poisson`). Note that use of the Poisson family would indicate a zero-inflated model. Here, we are using the owl dataset that is included in `glmmTMB` package. 
 
 ```{r Hurdle models using glmmTMB }
 
@@ -1020,7 +1022,7 @@ $$ \epsilon_{i} \sim Normal (0, \sigma^2) $$
 
 where the mean is 0 and the variance is $\sigma^2$ (remember that standard error of the mean estimate $\sigma$ is the square root of the variance).
 
-For a random-effects ANOVA, the $\alpha_{j(i)}$ paramaters come from a second distribution with some mean $\mu$ and variance $\tao^2$:   
+For a random-effects ANOVA, the $\alpha_{j(i)}$ paramaters come from a second distribution with some mean $\mu$ and variance $\tau^2$:   
 
 $$ \alpha_{j(i)} \sim Normal(\mu, \tau^2) $$
 
@@ -1182,7 +1184,7 @@ ICtab(sm0, sm1, sm2, sm3, sm4, base = T) # random-intercept model
 
 <br> 
 
-**Practice example 11:** For this practice example, we will be using the built-in dataset on grouse ticks from the lme4 package (see ?grouseticks). This dataset contains counts of ticks (TICKS) on the heads of red grouse chicks sampled in the field from different broods (BROOD).  
+**Practice example 11:** For this practice example, we will be using the built-in dataset on grouse ticks from the `lme4` package (see `?grouseticks`). This dataset contains counts of ticks (TICKS) on the heads of red grouse chicks sampled in the field from different broods (BROOD).  
 
 ```{r Red Grouse dataset }
 
@@ -1445,13 +1447,13 @@ summary(pois.reg)
 
 The following distributions have their relative random generation functions:
 
-* Bernoulli distribution, *rbernoulli()*
-* Negative binomial distribution, *rnbinom()*
-* Uniform distribution, *runif()* 
-* Gamma distribution, *rgamma()*
-* Conway-Maxwell-Poisson distribution, *rcomp()* in package "mpcmp"
-* Beta distribution, *rbeta()*
-* Exponential distribution, *rexp()*
+* Bernoulli distribution, `rbernoulli()`
+* Negative binomial distribution, `rnbinom()`
+* Uniform distribution, `runif()`
+* Gamma distribution, `rgamma()`
+* Conway-Maxwell-Poisson distribution, `mpcmp::rcomp()` in package `mpcmp`
+* Beta distribution, `rbeta()`
+* Exponential distribution, `rexp()`
 
 <br>
 
@@ -1459,7 +1461,7 @@ The following distributions have their relative random generation functions:
 
 This is just the surface of the many frequentist models you could use to analyze your data. For example, we did not delve into the world of multivariate statistics for understanding which set of response variables explains the most variation in your data, such as Principal Component Analysis (PCA), Linear discriminant Analysis (LCA), or Partial Least Square Regression (PLSR). 
 
-Two good resources for multivariate statistics would be *A Primer of Ecological Statistics* by Gotelli and Ellison (Ch 12) and the first chapter of *A Beginner's Guide to Generalized Additive Models with R* by Zuur, which is also a good introduction to GAMs where your linear predictor depends on some smooth function (rather than parametric function) of some covariate.  
+Two good resources for multivariate statistics would be "*A Primer of Ecological Statistics*" by Gotelli and Ellison (Ch 12) and the first chapter of "*A Beginner's Guide to Generalized Additive Models with R*" by Zuur, which is also a good introduction to GAMs where your linear predictor depends on some smooth function (rather than parametric function) of some covariate.  
 
 If you want to explore simulating multivariate data, [Dr. Eric Scott](https://www.ericrscott.com/) developed a R package called [Holodeck](https://github.com/Aariq/holodeck) for simulating multivariate data. 
 
@@ -1467,7 +1469,7 @@ If you want to explore simulating multivariate data, [Dr. Eric Scott](https://ww
 
 ## Sources
 
-Here are a list of more resources for statistics behind these models and example R code.  
+Here are a list of additional resources for statistics behind these models and more example R code:  
 
 * Bolker, B. (2008) *Ecological models and data in R.* Princeton University Press, Princeton, New Jersey, USA.
 (https://ms.mcmaster.ca/~bolker/emdbook/)   
