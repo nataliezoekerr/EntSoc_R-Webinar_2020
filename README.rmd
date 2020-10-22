@@ -7,11 +7,17 @@ output:
   html_document: default
 ---
 
+## DESCRIPTIONS FOR SESSIONS
+
+**Session 1:** This session will lay a coding foundation for R beginners. We will familiarize you with using the RStudio interface, RScripts and RMarkdown. Students will learn basic commands in the ever-changing R language, how to interpret errors and package installation. We will use these tools to wrangle and visualize data using Tidyverse packages.
+
+**Session 2:** Here, we will cover how to run linear models (LMs; e.g., Gaussian/Normal distribution), generalized linear models (GLMs; e.g., binomial, Poisson for count data), and mixed models (LMMs/GLMMs; e.g., fixed vs. random effects). We will also expand on models using Poisson-distributed data by evaluating how to deal with common issues such as when your count data are over-dispersed/under-dispersed (e.g., Poisson vs. Negative Binomial vs. Conway-Maxwell-Poisson), when counts should be represented as rates (e.g., counts per unit time using Poisson offsets), and when your count data are zero-inflated (e.g., 0-inflated regression vs hurdle models). Finally, we will finish the session on appropriate ways to run model selection techniques for finding a winning model from a set of candidate models, using Akaike Information Criteria (AIC) or likelihood ratio tests (LRT) for nested models. This course will not be a statistics course, so people will need to be familiar with most of these models.
+
+
 ## FOR BOTH SESSIONS
 
 Before reviewing the workshop content for both sessions. You will have to have both [Program R](
 https://cloud.r-project.org/) and [R Studio](https://rstudio.com/products/rstudio/) downloaded. 
-
 
 For session 1 and 2, you will need at least R version 3.6.2 or higher. To check your R Version, you can run the following code in your R console: 
 
@@ -20,8 +26,6 @@ For session 1 and 2, you will need at least R version 3.6.2 or higher. To check 
 R.Version()  
 
 ```
-
-
 
 Or navigate to *"Tools -> Global Options -> General"* and under *R Version*, it will tell you the version that you currently have installed on your computer. If your R version is outdated for our sessions, you can follow the instructions [here](https://www.r-bloggers.com/2017/05/upgrade-r-without-losing-your-packages/) to avoid having to re-install all of your existing packages. You will only need to update program R, not R Studio. 
 
@@ -41,12 +45,14 @@ updateR()
 Before continuing to session 2 on frequentist models. You will need the following packages installed.
 
 * here
+* tidyverse
 * pscl
 * glmmTMB
 * lme4
 * car 
 * lmtest
 * bbmle 
+* boot
 
 To install these packages, you can either navigate to the *"Files/Plots/Packages/Help/Viewer"* panel, click on *"Packages"* tab, then *"Install"* and type in each of the packages. Or you can use the following R code:  
 
