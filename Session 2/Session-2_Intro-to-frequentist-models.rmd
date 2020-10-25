@@ -1,17 +1,17 @@
 ---
 title: 'Session 2: Intro to frequentist models in R'
 author: "Natalie Z. Kerr & Brian Lovett"
-date: "October 21, 2020"
+date: "October 22, 2020"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  word_document: default
   html_document:
     toc: yes
     toc_depth: 4
     toc_float:
       collapsed: no
+  word_document: default
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
 editor_options:
   chunk_output_type: console
 urlcolor: blue
@@ -282,6 +282,9 @@ Here, we will use the built-in dataset from an experiment evaluating the effects
 
 ```{r Linear regression }
 
+attach(ChickWeight)
+head(ChickWeight)
+
 cw1 <- lm(weight ~ Time, data = ChickWeight)
 summary(cw1)
 
@@ -298,7 +301,7 @@ We can also run *n*-degree polynomial linear functions. I have choosen to only r
 cw2 <- lm(weight ~ Time + I(Time*Time), data = ChickWeight)
 summary(cw2)
 
-pred.quad <- coef(cw2)[1] + coef(cw2)[2]*0:21 + coef(cw2)[3]*0:21*0:21
+pred.quad <- coef(cw2)[1] + coef(cw2)[2]*0:21 + coef(cw2)[3]*(0:21)^2
 with(ChickWeight, plot(Time, weight, xlab = "Days since birth"))
 points(0:21, pred.quad, type = "l", col = "red") # quadratic function
 points(0:21, pred.lin, type = "l", col = "blue") # linear function
@@ -326,21 +329,23 @@ Using the ChickWeight dataset, we will run an ANCOVA to evaluate the interactive
 
 ```{r ANCOVA }
 
-cw3 <- lm(weight ~ factor(Diet)*Time, data = ChickWeight)
+cw3 <- lm(weight ~ Diet * Time, data = ChickWeight)
 coef(cw3)
 
 chick.dat <- data.frame(expand.grid(Time = 0:21, Diet = factor(c(1:4))))
 chick.dat$pred <- predict(cw3, newdata = chick.dat, type = "response") # use the predict() function
 head(chick.dat)
 
-ggplot(ChickWeight, aes(x = Time, y = weight, col = factor(Diet))) + geom_point() +
+ggplot(ChickWeight, aes(x = Time, y = weight, col = Diet)) + geom_point() +
   geom_line(chick.dat, mapping = aes(x = Time, y = pred, col = factor(Diet)))
 
 ```
 
+https://www.data-to-viz.com/
+
 <br>
 
-**Practice example 4:** Using the built-in data on ToothGrowth, run an ANCOVA to evaluate the interactive effects of supplement type and dose on chick weights. Then, plot these data. 
+**Practice example 4:** Using the built-in data on ToothGrowth, run an ANCOVA to evaluate the interactive effects of supplement type and dose on tooth growth. Then, plot these data. 
 
 ```{r Practice 4 - ANCOVA }
 
@@ -541,8 +546,8 @@ host_mod <- glm(Mass ~ Host, family=gaussian, data = herb)
 treat_mod <- glm(Mass ~ Treat, family=gaussian, data = herb) 
 
 lmtest::lrtest(add_mod, sat_mod)
-lrtest(host_mod, add_mod)
-lrtest(treat_mod, add_mod)
+lrtest(host_mod, add_mod) # does treatment improve model fit for the additive model?
+lrtest(treat_mod, add_mod) # does host plant improve model fit for the additive model?
 
 ```
 
@@ -568,7 +573,7 @@ where the log of mean $\mu_{y}$ is a linear function of *x*.
 
 Before explaining the Binomial distribution, we should explain the Bernoulli distribution. The Bernoulli distribution describes the probability of getting a single event in a single trial (or a particular sequence of results in some number of trials), whereas the binomial distribution describes the probability of getting *k* events out of *N* unordered trials, if each trial has a Bernoulli distribution with probability *p* of an event. Therefore, a binomial distribution with only one trial is a Bernoulli distribution.
 
-* **Bernouli trial** - if we tossed a coin six times and we got five heads, we could represent this as one trial where we got 4 successes and 2 failures, where the probability of getting heads is 0.67 (=4/6). The number of trials *N* is 1.
+* **Bernouli trial** - if we tossed a coin six times and we got four heads, we could represent this as one trial where we got 4 successes and 2 failures, where the probability of getting heads is 0.67 (=4/6). The number of trials *N* is 1.
 * **Binomial trial** - if we tossed a coin six times, we got heads (1), tails (0), heads (1), heads (1), tails (0), and heads (1). If each toss was treated as an independent Bernoulli trial, the number of trials *N* is 6 and the *k* events is 4. 
 
 Below, we will use generalized linear models to estimate a response that is binomially-distributed. A binomial response can either be at the individual-level (i.e., presence/absence where each "0" or "1" is an independent Bernoulli trial) or at the group-level (e.g., *k* events and *N* trials).  
@@ -627,6 +632,7 @@ We can run an intercept-only logit-link GLM to estimate the overwinter survival 
 
 surv <- read.csv(here::here("Session 2", "Data", "MW_OverwinterSurv.csv"))
 head(surv)
+surv$failures <- surv$Fall.count - surv$Spring.count
 
 ws1 <- glm(cbind(Spring.count, Fall.count - Spring.count) ~ 1, family = binomial, data = surv)
 summary(ws1)  
@@ -702,6 +708,8 @@ with(wolves[13:22,], plot(year, num.wolves))
 points(1994:2003, coef(wv10a)[1] + coef(wv10a)[2]*1994:2003, type = "l", col = "blue") # linear growth
 points(1994:2003, exp(coef(wv10b)[1] + coef(wv10b)[2]*1994:2003), type = "l", col = "red") # unlimited expontential growth 
 
+ICtab(wv10a, wv10b)
+
 ```
 
 Second, we will evaluate whether the total number of wolves has changed over the full 30-year period from 1983 to 2012. 
@@ -719,6 +727,8 @@ coef(wv30b)
 with(wolves[2:31,], plot(year, num.wolves))
 points(1983:2012, exp(coef(wv30a)[1] + coef(wv30a)[2]*1983:2012), type = "l", col = "blue") 
 points(1983:2012, exp(coef(wv30b)[1] + coef(wv30b)[2]*1983:2012 + coef(wv30b)[3]*1983:2012*1983:2012), type = "l", col = "red") 
+
+ICtab(wv10a, wv10b)
 
 ```
 
@@ -853,7 +863,7 @@ There are multiple ways to deal with overdispersed count data:
 * Conway-Maxwell-Poisson distribution (`family = compois`)
 * [Observation-level random effects](https://peerj.com/articles/616/)
 
-Here, we will use the negative binomial distribution, which is the most common approach for overdispersion. A negative binomial distribution is essentially the average of different Poisson distributions with different means. Unlike the Poisson distribution where the mean is equal to the limits, the variance of the negative binomial can be either linear (`nbinom1`) or quaratic (`nbinom2`) parameterization of the mean. Therefore, a negative binomial mean closer to its limit -> $\infty$ will resemble a Poisson distribution. But closer to the bound of 0, it allows for greater variance in relation to its mean.  
+Here, we will use the negative binomial distribution, which is the most common approach for overdispersion. A negative binomial distribution is essentially the average of different Poisson distributions with different means. Unlike the Poisson distribution where the mean is equal to the variance, the variance of the negative binomial can be either linear (`nbinom1`) or quaratic (`nbinom2`) parameterization of the mean. Therefore, a negative binomial mean closer to its limit -> $\infty$ will resemble a Poisson distribution. But closer to the bound of 0, it allows for greater variance in relation to its mean.  
 
 Let's re-run the intercept-only Poisson offset model for Northern Flicker counts using a negative binomial distribution using `glmmTMB` function in the `glmmTMB` package by Ben Bolker.
 
@@ -861,7 +871,7 @@ Let's re-run the intercept-only Poisson offset model for Northern Flicker counts
 
 nf2 <- glmmTMB(Count ~ 1, offset = log(hours), family = nbinom1, data = flickers)
 nf3 <- glmmTMB(Count ~ 1, offset = log(hours), family = nbinom2, data = flickers)
-ICtab(nf2, nf3) # variance is linearly parameterized to its mean
+ICtab(nf1_offset, nf2, nf3) # variance is linearly parameterized to its mean
 
 summary(nf1_offset)$coefficients # Poisson variance
 summary(nf2)$coefficients$cond # NB allows for greater variance
@@ -885,7 +895,7 @@ Using these data, we want to estimate the brood size of barn owls and evaluate w
 ```{r Testing for underdispersion - brood size of owls }
 
 attach(Owls)
-Owls.sum <- Owls %>% group_by(Nest) %>% distinct(BroodSize) 
+Owls.sum <- Owls %>% group_by(Nest) %>% distinct(BroodSize)  # dplyr - %>% pipe
 
 hist(Owls.sum$BroodSize)
  
@@ -927,13 +937,15 @@ A zero-inflated Poisson model is required for this process, since not all zeros 
 
 You can implement zero-inflated models using `zeroinfl` function in the `pscl` package. 
 
-> pscl::zerinfl(formula = y ~ x_count | x_zero)
+> pscl::zeroinfl(formula = y ~ x_count | x_zero)
 
 However, we will be using the `glmmTMB` package to run both zero-inflated and hurdle models, since this package has additional probability distributions not in `pscl` and it also allows for both these models to have mixed-effects, which we will discuss later.
 
 ```{r ZIP using glmmTMB }
 
-ZIP1 <- glmmTMB(Count ~ 1, offset = log(hours), ziformula = ~1, family = "nbinom1", data = flickers)
+hist(flickers$Count)
+
+ZIP1 <- glmmTMB(Count ~ 1, offset = log(hours), ziformula = ~ 1, family = "nbinom1", data = flickers)
 summary(ZIP1)
 summary(ZIP1)$coefficients
 
@@ -941,8 +953,9 @@ ZIP2 <- glmmTMB(Count ~ 1, offset = log(hours), ziformula = ~Latitude, family = 
 lrtest(ZIP1, ZIP2) # significant effect of latitude on zero process
 summary(ZIP2)$coefficients
 
-ZiP3 <- glmmTMB(Count ~ Latitude, offset = log(hours), ziformula = ~., family = "nbinom1", data = flickers)
-summary(ZiP3)$coefficients
+ZIP3 <- glmmTMB(Count ~ Latitude, offset = log(hours), ziformula = ~., family = "nbinom1", data = flickers)
+lrtest(ZIP2, ZIP3)
+summary(ZIP3)$coefficients
 
 ```
 
@@ -952,6 +965,7 @@ The glmmTMB package also allows for hurdle models for count data using the "trun
 ```{r Hurdle models using glmmTMB }
 
 table(Owls$SiblingNegotiation)
+hist(Owls$SiblingNegotiation)
 
 h_mod_pois <- glmmTMB(SiblingNegotiation ~ FoodTreatment, ziformula = ~FoodTreatment, 
                       family = truncated_poisson(link = "log"), data = Owls)
@@ -961,7 +975,7 @@ h_mod_nbin2 <- glmmTMB(SiblingNegotiation ~ FoodTreatment, ziformula = ~FoodTrea
                       family = truncated_nbinom2(link = "log"), data = Owls)
 h_mod_compois <- glmmTMB(SiblingNegotiation ~ FoodTreatment, ziformula = ~FoodTreatment, 
                       family = truncated_nbinom2(link = "log"), data = Owls)
-ICtab(h_mod_pois, h_mod_nbin1, h_mod_nbin2, h_mod_compois) # do we need to account for overdispersion?
+ICtab(h_mod_pois, h_mod_nbin1, h_mod_nbin2, h_mod_compois, base = T) # do we need to account for overdispersion?
 
 summary(h_mod_nbin1)
 
@@ -1217,6 +1231,10 @@ ranef(dens_re1)
 
 dens_re2 <- lmer(log(mean.density) ~ yearPost + (1 | region) + (1|region:site), data = hares) # same model
 ranef(dens_re2)
+
+dens_re3 <- lmer(log(mean.density) ~ yearPost + (1 | region), data = hares) # same model
+
+ICtab(dens_re2, dens_re3)
 
 ```
 
