@@ -699,7 +699,7 @@ coef(wv10a) # year is the change in the # of wolves per year
 
 wv10b <- glm(num.wolves ~ year, family = poisson(link = "log"), data = wolves[13:22,])
 coef(wv10b)
-exp(coef(wv10b)[2]) # slope is the population growth rate
+exp(coef(wv10b)[2]) # back-transformed slope is the population growth rate
 
 wolves$num.wolves[13] # number of wolves in 1994
 exp(coef(wv10b)[2]) * wolves$num.wolves[14] # estimated number of wolves in 1995
