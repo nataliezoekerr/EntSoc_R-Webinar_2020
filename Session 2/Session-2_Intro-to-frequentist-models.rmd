@@ -702,7 +702,9 @@ coef(wv10b)
 exp(coef(wv10b)[2]) # back-transformed slope is the population growth rate
 
 wolves$num.wolves[13] # number of wolves in 1994
-exp(coef(wv10b)[2]) * wolves$num.wolves[14] # estimated number of wolves in 1995
+exp(coef(wv10b)[2]) * wolves$num.wolves[14] # estimated number of wolves in 1995, N(t+x) = N(t) * r^x
+exp(coef(wv10b)[2])^4 * wolves$num.wolves[14]
+
 
 with(wolves[13:22,], plot(year, num.wolves))
 points(1994:2003, coef(wv10a)[1] + coef(wv10a)[2]*1994:2003, type = "l", col = "blue") # linear growth
@@ -728,7 +730,7 @@ with(wolves[2:31,], plot(year, num.wolves))
 points(1983:2012, exp(coef(wv30a)[1] + coef(wv30a)[2]*1983:2012), type = "l", col = "blue") 
 points(1983:2012, exp(coef(wv30b)[1] + coef(wv30b)[2]*1983:2012 + coef(wv30b)[3]*1983:2012*1983:2012), type = "l", col = "red") 
 
-ICtab(wv10a, wv10b)
+ICtab(wv30a, wv30b)
 
 ```
 
@@ -768,7 +770,9 @@ head(flickers)
 
 nf1 <- glm(Count ~ 1, family = poisson, data = flickers)
 nf1_offset <- glm(Count ~ 1, offset = log(hours), family = poisson, data = flickers)
-ICtab(nf1, nf1_offset)
+ICtab(nf1, nf1_offset, nf2)
+
+nf2 <- glm(Count/hours ~ 1, family = gaussian, data = flickers)
 
 exp(coef(nf1_offset)) # 0.07 birds per hour
 
@@ -937,7 +941,7 @@ A zero-inflated Poisson model is required for this process, since not all zeros 
 
 You can implement zero-inflated models using `zeroinfl` function in the `pscl` package. 
 
-> pscl::zeroinfl(formula = y ~ x_count | x_zero)
+> pscl::zeroinfl(formula = y ~ x_count | x_zero, dist = "negbin")
 
 However, we will be using the `glmmTMB` package to run both zero-inflated and hurdle models, since this package has additional probability distributions not in `pscl` and it also allows for both these models to have mixed-effects, which we will discuss later.
 
@@ -993,7 +997,7 @@ h_zero <- glm(PEcervi ~ Sex, family = binomial, data = deer)
 Anova(h_zero)
 
 h_nzero <- glm(log(Ecervi) ~ KFI, family = gaussian, data = subset(deer, PEcervi == 1))
-Anova(h_nzero) # no interaction 
+Anova(h_nzero) 
 
 non_hurdle <- glm(log(Ecervi + 0.01) ~ Sex*KFI, family = gaussian, data = deer)
 Anova(non_hurdle)
