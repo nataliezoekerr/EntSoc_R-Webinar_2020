@@ -720,7 +720,7 @@ Anova(pec1)
 
 Here, we will be exploring running log-link GLMs using the Poisson error distribution. In simple terms, the Poisson distribution is used for discrete count data that are bound by 0 to $\infty$.
 
-In more complex terms, the Poisson distribution is like the binomial distribution in that it has a large "unknown" number of trials *N* and a small probability of an event $p = \lambda / N$, where $\lambda$ is the *k* discrete events (or mean count estimate). The probability of given number of events can be thought of as the probability of counting an individual that occurs over a fixed interval of time or space.
+In more complex terms, the Poisson distribution is similar to the binomial distribution in that it has a large "unknown" number of trials *N* and a small probability of an event $p = \lambda / N$, where $\lambda$ is the *k* discrete events (or mean count estimate). The probability of given number of events can be thought of as the probability of counting an individual that occurs over a fixed interval of time or space.
 
 Here, we have counts of wolves in each year from 1982 to 2012 across five US states.   
 
