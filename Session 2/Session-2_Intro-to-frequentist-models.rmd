@@ -750,7 +750,7 @@ ICtab(wv10a, wv10b)
 Here, we will cover how to deal with three common issues that you may encounter with Poisson-distributed data: 
 
   1. When counts should be represented as rates
-  2. When count data are over- or under-dispersed for the Poisson distribution variance
+  2. When count data are over- or under-dispersed for the Poisson distribution
   3. When count data are zero-inflated
 
 <br>
@@ -805,7 +805,7 @@ wv30b <- glm(num.wolves ~ year + I(year*year),
 wv30c <- glm(num.wolves[2:31] ~ 1, offset = log(num.wolves[1:30]), 
              family = poisson(link = "log"), data = wolves) # process error model
 exp(coef(wv30c)) # growth rate from each time step
-wolves$num.wolves[2:31] * exp(coef(wv30c))   
+wolves$num.wolves[1:30] * exp(coef(wv30c))   
 
 with(wolves[2:31,], plot(year, num.wolves, ylim = c(0, 2000)))
 points(1983:2012, exp(coef(wv30a)[1] + coef(wv30a)[2]*1983:2012), type = "l", col = "blue") # observation error
