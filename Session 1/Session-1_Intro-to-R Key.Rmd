@@ -624,7 +624,7 @@ Once your ggplot() function is established, you will need to at least provide a 
 
 A basic ggplot bar plot will be defined as follows:
 
-ggplot(data=data, aes(x=column, y=column, color=column))+geom_col()
+ggplot(data=data, aes(x=column, y=column, fill=column))+geom_col()
 
 First, we will plot our InsectSpray data.
 
@@ -642,6 +642,8 @@ For similar reasons, we will create a separate object that contains the limits f
 
 ```{r spiffy ggplot, include=T}
 theme <- theme_bw() + theme(text = element_text(size=20), axis.title.x = element_text(size=20), axis.text.x = element_text(size=15), axis.text.y = element_text(size=15), title = element_text(size=25), legend.title = element_text(size=15), legend.text = element_text(size=20), plot.title = element_text(hjust = 0.5))
+
+spray.plt+theme
 
 limits <- aes(ymax=mn+sd, ymin=mn-sd)
 
@@ -661,8 +663,8 @@ To take this one step further, we could determine our own bar colors. Typically,
 library(RColorBrewer)
 
 # We can install MaizePal using devtools
-# install.packages('devtools')
-# devtools::install_github("AndiKur4/MaizePal")
+#install.packages('devtools')
+#devtools::install_github("AndiKur4/MaizePal")
 library(MaizePal)
 
 maize_pal("HopiBlue")
@@ -680,19 +682,19 @@ spray.plt4
 Create a ggplot2 boxplot displaying our InsectSprays count data.
 
 ```{r practice exercise 5, include=T}
-spray.boxplot <- ggplot(data=dat, aes(x=spray, y=count, fill=spray))+geom_boxplot()+
-  theme+scale_fill_manual(values=palette1)+xlab("Insects")+ylab("Sprays")+guides(fill=F)
 
-spray.boxplot
+
 ```
 
 We can combine multiple plots using ggplot(): it will overlay each individual geom sequentially. Below, we can visualize the distribution of insect counts from our InsectSprays data using both a violin plot and points.
 
 ```{r multiple plot types at once, include=T}
-spray.plt5 <- ggplot(data=dat, aes(x=spray, y=count, fill=spray), color=black)+
+dat$spray <- factor(dat$spray, levels=levels(dat$spray)[c(6,1:5)])
+
+spray.plt5 <- ggplot(data=dat, aes(x=spray, y=count, fill=spray))+
   #"jitter" moves points slightly so we can see points that overlap
-  geom_violin()+geom_point(position="jitter")+
-  theme+theme+ylab("Insects")+xlab("Spray")+
+  geom_violin()+geom_point(position="jitter", color="grey")+
+  theme+theme+ylab("Insects")+xlab("Spray")+scale_fill_manual(values=palette1)+
   ggtitle("Surviving insects following\neach spray")+ guides(fill=F)
 spray.plt5
 ```
